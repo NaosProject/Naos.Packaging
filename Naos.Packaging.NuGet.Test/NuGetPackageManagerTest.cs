@@ -47,7 +47,7 @@ namespace Naos.Packaging.NuGet.Test
                 includePreRelease).Wait();
         }
 
-        [Fact]
+        [Fact(Skip = "Meant for local debugging and to show usage.")]
         public void DownloadPublic()
         {
             var defaultWorkingDirectory = @"D:\Temp\NewNuGet";

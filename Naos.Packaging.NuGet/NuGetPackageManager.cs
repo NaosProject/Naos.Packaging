@@ -193,9 +193,10 @@ namespace Naos.Packaging.NuGet
 
             var ret = new List<SourceRepository>();
 
-            var privatePackageSource = this.ConstructPrivateConfigurationPackageSource();
-            if (privatePackageSource != null)
+            if (this.includePrivateRepository)
             {
+                var privatePackageSource = this.ConstructPrivateConfigurationPackageSource();
+
                 List<Lazy<INuGetResourceProvider>> resourceProviders;
                 switch (privatePackageSource.ProtocolVersion)
                 {
@@ -222,7 +223,7 @@ namespace Naos.Packaging.NuGet
         private global::NuGet.Configuration.PackageSource ConstructPrivateConfigurationPackageSource()
         {
             // WARNING - Changes here must be reflected in ConstructPrivatePackageSource (yes this is WRONG but necessary because the different namespaces are used in different places - file a bug with NuGet...)
-            var privatePackageSource = this.includePrivateRepository
+            var privatePackageSource = !this.includePrivateRepository
                                            ? null
                                            : new global::NuGet.Configuration.PackageSource(
                                                  this.privateRepositoryUrl,
@@ -239,7 +240,7 @@ namespace Naos.Packaging.NuGet
         private PackageSource ConstructPrivatePackageSource()
         {
             // WARNING - Changes here must be reflected in ConstructPrivateConfigurationPackageSource (yes this is WRONG but necessary because the different namespaces are used in different places - file a bug with NuGet...)
-            var privatePackageSource = this.includePrivateRepository
+            var privatePackageSource = !this.includePrivateRepository
                                            ? null
                                            : new PackageSource(
                                                  this.privateRepositoryUrl,
