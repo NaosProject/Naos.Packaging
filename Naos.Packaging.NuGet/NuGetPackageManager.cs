@@ -25,9 +25,42 @@ namespace Naos.Packaging.NuGet
     using global::NuGet.Versioning;
 
     /// <summary>
+    /// Wrapper interface for NuGet to make usage straightforward..
+    /// </summary>
+    public interface IManageNuGetPackages
+    {
+        /// <summary>
+        /// Gets the latest version of the package specified.
+        /// </summary>
+        /// <param name="packageId">Package ID.</param>
+        /// <param name="includeUnlisted">Include unlisted packages when resolving ID.</param>
+        /// <param name="includePreRelease">Include pre release packages when resolving ID.</param>
+        /// <returns>String representation of latest version.</returns>
+        Task<string> GetLatestVersionAsync(string packageId, bool includeUnlisted, bool includePreRelease);
+
+        /// <summary>
+        /// Install a package (and optionally dependencies) into the specified path.
+        /// </summary>
+        /// <param name="packageId">Package ID.</param>
+        /// <param name="packageVersion">Package version.</param>
+        /// <param name="installPath">Path to download packages into.</param>
+        /// <param name="includeDependencies">Include dependencies when downloading.</param>
+        /// <param name="includeUnlisted">Include unlisted packages when resolving ID.</param>
+        /// <param name="includePreRelease">Include pre release packages when resolving ID.</param>
+        /// <returns>Task to make async.</returns>
+        Task DownloadPackageToPathAsync(
+            string packageId,
+            string packageVersion,
+            string installPath,
+            bool includeDependencies,
+            bool includeUnlisted,
+            bool includePreRelease);
+    }
+
+    /// <summary>
     /// Wrapper object around NuGet to make usage straightforward and document/hide the nonsense needed to construct a manager.
     /// </summary>
-    public class NuGetPackageManager
+    public class NuGetPackageManager : IManageNuGetPackages
     {
         private readonly int privateRepositoryProtocolVersion;
 
@@ -99,13 +132,7 @@ namespace Naos.Packaging.NuGet
             this.sourceRepositories = this.ConstructSourceRepositories();
         }
 
-        /// <summary>
-        /// Gets the latest version of the package specified.
-        /// </summary>
-        /// <param name="packageId">Package ID.</param>
-        /// <param name="includeUnlisted">Include unlisted packages when resolving ID.</param>
-        /// <param name="includePreRelease">Include pre release packages when resolving ID.</param>
-        /// <returns>String representation of latest version.</returns>
+        /// <inheritdoc />
         public async Task<string> GetLatestVersionAsync(
             string packageId,
             bool includeUnlisted,
@@ -131,16 +158,7 @@ namespace Naos.Packaging.NuGet
             return version.ToString();
         }
 
-        /// <summary>
-        /// Install a package (and optionally dependencies) into the specified path.
-        /// </summary>
-        /// <param name="packageId">Package ID.</param>
-        /// <param name="packageVersion">Package version.</param>
-        /// <param name="installPath">Path to download packages into.</param>
-        /// <param name="includeDependencies">Include dependencies when downloading.</param>
-        /// <param name="includeUnlisted">Include unlisted packages when resolving ID.</param>
-        /// <param name="includePreRelease">Include pre release packages when resolving ID.</param>
-        /// <returns>Task to make async.</returns>
+        /// <inheritdoc />
         public async Task DownloadPackageToPathAsync(
             string packageId, 
             string packageVersion,

@@ -12,6 +12,11 @@ namespace Naos.Packaging.Domain
     public class PackageDescription
     {
         /// <summary>
+        /// The package id for a null package that will run through without any interaction.
+        /// </summary>
+        public const string NullPackageId = "NullPackage";
+
+        /// <summary>
         /// Gets or sets the ID of the package.
         /// </summary>
         public string Id { get; set; }
