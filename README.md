@@ -13,9 +13,10 @@ A wrapper around downloading NuGet packages from public and private repositories
 Use - Referencing in your code
 -----------
 It's best to reference the NuGet package: <a target="_blank" href="http://www.nuget.org/packages/Naos.Packaging.NuGet">http://www.nuget.org/packages/Naos.Packaging.NuGet</a> which will provide a more feature rich interaction with packages...
-The specific NuGet operations using the prototcol are included in a single file which can you copied into your project without a Naos depedency in your project (will still REQUIRE package NuGet.PackageManagement): <a target="_blank" href="https://raw.githubusercontent.com/NaosProject/Naos.Packaging/master/Naos.Packaging.NuGet/NuGetPackageManager.cs">https://raw.githubusercontent.com/NaosProject/Naos.Packaging/master/Naos.Packaging.NuGet/NuGetPackageManager.cs</a>.
+The specific NuGet operations using the prototcol are included in a single file which can be copied into your project without a Naos depedency in your project (will still REQUIRE package NuGet.PackageManagement): <a target="_blank" href="https://raw.githubusercontent.com/NaosProject/Naos.Packaging/master/Naos.Packaging.NuGet/NuGetPackageManager.cs">https://raw.githubusercontent.com/NaosProject/Naos.Packaging/master/Naos.Packaging.NuGet/NuGetPackageManager.cs</a>.
 
 ```C#
+// this is how you would use the full retriever
 [Fact(Skip = "Meant for local debugging and to show usage.")]
 public void DownloadPrivate()
 {
