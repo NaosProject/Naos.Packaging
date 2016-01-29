@@ -351,9 +351,11 @@ namespace Naos.Packaging.NuGet
             ns.Add(string.Empty, string.Empty);
             serializer.Serialize(writer, config, ns);
             var ret = stringBuilder.ToString();
-            ret = ret.Replace(
-                "packageSourceCredentialKeys",
-                config.ActivePackageSource.Single(_ => _.Key != NuGetPublicGalleryNameV2).Key).Replace("utf-16", "utf-8");
+            ret =
+                ret.Replace(
+                    "packageSourceCredentialKeys",
+                    config.ActivePackageSource.Single(_ => _.Key != NuGetPublicGalleryNameV2 && _.Key != NuGetPublicGalleryNameV3).Key)
+                    .Replace("utf-16", "utf-8");
             return ret;
         }
 
