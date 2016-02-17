@@ -71,5 +71,43 @@ namespace Naos.Packaging.NuGet.Test
                 includeUnlisted,
                 includePreRelease).Wait();
         }
+
+        [Fact]
+        public static void BuildConfigFileFromRepositoryConfigurationThenSerializeNuGetConfig_ValidObject_ValidXml()
+        {
+            var sourceName = "ThisIsSource";
+            var source = "https://this-is-url";
+            var username = "ThisIsUser";
+            var password = "ThisIsPassword";
+
+            var config = NuGetConfigFile.BuildConfigFileFromRepositoryConfiguration(
+                sourceName,
+                source,
+                username,
+                password);
+
+            var actualXml = NuGetConfigFile.Serialize(config);
+            var expectedXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + Environment.NewLine +
+"<configuration>" + Environment.NewLine +
+"  <activePackageSource>" + Environment.NewLine +
+"    <add key=\"nuget.org v2\" value=\"https://www.nuget.org/api/v2/\" />" + Environment.NewLine +
+"    <add key=\"nuget.org v3\" value=\"https://api.nuget.org/v3/index.json\" />" + Environment.NewLine +
+"    <add key=\"" + sourceName + "\" value=\"" + source + "\" />" + Environment.NewLine +
+"  </activePackageSource>" + Environment.NewLine +
+"  <packageSources>" + Environment.NewLine +
+"    <add key=\"nuget.org v2\" value=\"https://www.nuget.org/api/v2/\" />" + Environment.NewLine +
+"    <add key=\"nuget.org v3\" value=\"https://api.nuget.org/v3/index.json\" />" + Environment.NewLine +
+"    <add key=\"" + sourceName + "\" value=\"" + source + "\" />" + Environment.NewLine +
+"  </packageSources>" + Environment.NewLine +
+"  <packageSourceCredentials>" + Environment.NewLine +
+"    <" + sourceName + ">" + Environment.NewLine +
+"      <add key=\"Username\" value=\"" + username + "\" />" + Environment.NewLine +
+"      <add key=\"ClearTextPassword\" value=\"" + password + "\" />" + Environment.NewLine +
+"      <add key=\"Password\" value=\"\" />" + Environment.NewLine +
+"    </" + sourceName + ">" + Environment.NewLine +
+"  </packageSourceCredentials>" + Environment.NewLine +
+"</configuration>";
+            Assert.Equal(expectedXml, actualXml);
+        }
     }
 }
