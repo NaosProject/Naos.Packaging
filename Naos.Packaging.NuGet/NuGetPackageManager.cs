@@ -155,7 +155,7 @@ namespace Naos.Packaging.NuGet
                 this.sourceRepositories,
                 CancellationToken.None);
 
-            return version.ToString();
+            return version == null ? null : version.ToString();
         }
 
         /// <inheritdoc />
