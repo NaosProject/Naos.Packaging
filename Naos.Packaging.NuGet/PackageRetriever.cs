@@ -243,7 +243,8 @@ namespace Naos.Packaging.NuGet
             try
             {
                 var xmlDoc = new XmlDocument();
-                xmlDoc.LoadXml(nuSpecFileContents);
+                var sanitizedNuSpecFileContents = nuSpecFileContents.Replace("\ufeff", string.Empty); // strip the BOM as it makes XML.Load bomb...;
+                xmlDoc.LoadXml(sanitizedNuSpecFileContents);
 
                 var xpath = "/*[local-name()='package']/*[local-name()='metadata']";
                 var nodes = xmlDoc.SelectNodes(xpath);

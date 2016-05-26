@@ -8,6 +8,8 @@ namespace Naos.Packaging.NuGet.Test
 {
     using System;
 
+    using FluentAssertions;
+
     using Naos.Packaging.Domain;
 
     using Xunit;
@@ -151,6 +153,34 @@ namespace Naos.Packaging.NuGet.Test
             var packageManager = new PackageRetriever(null, null);
             var ex = Assert.Throws<ArgumentException>(() => packageManager.GetVersionFromNuSpecFile(nuSpecFileContents));
             Assert.Equal("Found multiple metadata nodes in the provided NuSpec.", ex.Message);
+        }
+
+        [Fact]
+        public static void GetVersionFromNuSpecFile_SucceedsWithXmlHeaderWithEncoding()
+        {
+            // DO NOT MESS WITH THIS STRING!! - it's got a BOM hiding at the beginning to test
+            var nuSpecFileContents = @"﻿<?xml version=""1.0"" encoding=""utf-8""?>
+<package xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <metadata>
+    <id>Naos.MessageBus.Hangfire.Database</id>
+    <version>1.0.165-addseparatejobtracki</version>
+    <authors>Naos Project</authors>
+    <owners>Naos Project</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>http://naosproject.com/</projectUrl>
+    <iconUrl>http://getthinktank.wpengine.com/wp-content/uploads/2016/05/NAOS-NuGet-Icon.png</iconUrl>
+    <description>Created on 2016-05-26 00:39</description>
+    <copyright>Copyright (c) 2016 Naos LLC</copyright>
+    <dependencies>
+      <dependency id=""FluentMigrator"" version=""1.6.1"" />
+    </dependencies>
+  </metadata>
+</package>";
+
+            var packageManager = new PackageRetriever(null, null);
+            var version = packageManager.GetVersionFromNuSpecFile(nuSpecFileContents);
+            version.Should().Be("1.0.165-addseparatejobtracki");
         }
 
         [Fact]
