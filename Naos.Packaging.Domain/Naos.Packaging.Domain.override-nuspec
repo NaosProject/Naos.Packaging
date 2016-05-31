@@ -1,0 +1,6 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <description>Abstraction from any specific packaging system to allow depedencies to have a decoupled way of defining a package.</description>
+  </metadata>
+</package>

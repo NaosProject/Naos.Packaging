@@ -8,7 +8,7 @@
 
 Naos.Packaging
 ================
-A wrapper around downloading NuGet packages from public and private repositories.  Using latest version so it supports V3 depedencies as well as V2.
+Includes an abstraction from any specific packaging system to allow depedencies to have a decoupled way of defining a package. Also has a simple wrapper around downloading NuGet packages from public and private repositories, this greatly reduces the complexity needed to access NuGet Repositories, supports V2 and V3 depedencies.
 
 Use - Referencing in your code
 -----------
