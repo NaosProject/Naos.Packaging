@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0"?>
 <package>
   <metadata>
-    <description>simple wrapper around downloading NuGet packages from public and private repositories, this greatly reduces the complexity needed to access NuGet Repositories, supports V2 and V3 depedencies.</description>
+    <description>Simple wrapper around downloading NuGet packages from public and private repositories, this greatly reduces the complexity needed to access NuGet Repositories, supports V2 and V3 depedencies.</description>
   </metadata>
 </package>
