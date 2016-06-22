@@ -71,7 +71,7 @@ namespace Naos.Packaging.NuGet
         }
 
         /// <inheritdoc />
-        public byte[] GetPackageFile(PackageDescription packageDescription, bool bundleAllDependencies = false)
+        public byte[] GetPackageFile(PackageDescription packageDescription)
         {
             if (string.Equals(packageDescription.Id, PackageDescription.NullPackageId, StringComparison.CurrentCultureIgnoreCase))
             {
@@ -81,76 +81,9 @@ namespace Naos.Packaging.NuGet
             var workingDirectory = Path.Combine(
                 this.defaultWorkingDirectory,
                 "Down-" + DateTime.Now.ToString(DirectoryDateTimeToStringFormat));
-            byte[] ret;
-            if (bundleAllDependencies)
-            {
-                var packageFilePaths = this.DownloadPackages(new[] { packageDescription }, workingDirectory, true);
-                var bundleStagePath = Path.Combine(workingDirectory, "Bundle");
-                foreach (var packageFilePath in packageFilePaths)
-                {
-                    var packageName = new FileInfo(packageFilePath).Name.Replace(".nupkg", string.Empty);
-                    var targetPath = Path.Combine(bundleStagePath, packageName);
-                    ZipFile.ExtractToDirectory(packageFilePath, targetPath);
 
-                    // delete tools dir to avoid unnecessary issues with unrelated assemblies
-                    var toolsPath = Path.Combine(targetPath, "tools");
-                    if (Directory.Exists(toolsPath))
-                    {
-                        Directory.Delete(toolsPath, true);
-                    }
-
-                    // thin out older frameworks so there is a single copy of the assembly (like if we have net45, net40, net35, windows8, etc. - only keep net45...).
-                    var libPath = Path.Combine(targetPath, "lib");
-                    var frameworkDirectories = Directory.Exists(libPath)
-                                                   ? Directory.GetDirectories(libPath)
-                                                   : new string[0];
-
-                    if (frameworkDirectories.Any())
-                    {
-                        var frameworkFolderToKeep = frameworkDirectories.Length == 1
-                                                        ? frameworkDirectories.Single()
-                                                        : frameworkDirectories.Where(
-                                                            directoryPath =>
-                                                                {
-                                                                    var directoryName = Path.GetFileName(directoryPath);
-                                                                    var includeInWhere = directoryName != null
-                                                                                         && directoryName.StartsWith(
-                                                                                             "net",
-                                                                                             StringComparison.InvariantCultureIgnoreCase);
-                                                                    return includeInWhere;
-                                                                }).OrderByDescending(_ => _).FirstOrDefault();
-
-                        // ReSharper disable once ConvertIfStatementToNullCoalescingExpression - seems more confusing that way...
-                        if (frameworkFolderToKeep == null)
-                        {
-                            // this will happen with a package that doesn't honor the 'NET' prefix on framework folders...
-                            frameworkFolderToKeep = frameworkDirectories.Where(
-                                directoryPath =>
-                                    {
-                                        var directoryName = Path.GetFileName(directoryPath);
-                                        var includeInWhere = directoryName != null;
-                                        return includeInWhere;
-                                    }).OrderByDescending(_ => _).FirstOrDefault();
-                        }
-
-                        var unnecessaryFrameworks =
-                            frameworkDirectories.Except(new[] { frameworkFolderToKeep }).ToList();
-                        foreach (var unnecessaryFramework in unnecessaryFrameworks)
-                        {
-                            Directory.Delete(unnecessaryFramework, true);
-                        }
-                    }
-                }
-
-                var bundledFilePath = Path.Combine(workingDirectory, packageDescription.Id + "_DependenciesBundled.zip");
-                ZipFile.CreateFromDirectory(bundleStagePath, bundledFilePath);
-                ret = File.ReadAllBytes(bundledFilePath);
-            }
-            else
-            {
-                var packageFilePath = this.DownloadPackages(new[] { packageDescription }, workingDirectory).Single();
-                ret = File.ReadAllBytes(packageFilePath);
-            }
+            var packageFilePath = this.DownloadPackages(new[] { packageDescription }, workingDirectory).Single();
+            var ret = File.ReadAllBytes(packageFilePath);
 
             // clean up temp files
             Directory.Delete(workingDirectory, true);
@@ -159,14 +92,13 @@ namespace Naos.Packaging.NuGet
         }
 
         /// <inheritdoc />
-        public Package GetPackage(PackageDescription packageDescription, bool bundleAllDependencies)
+        public Package GetPackage(PackageDescription packageDescription)
         {
             var ret = new Package
                           {
                               PackageDescription = packageDescription,
-                              PackageFileBytes = this.GetPackageFile(packageDescription, bundleAllDependencies),
+                              PackageFileBytes = this.GetPackageFile(packageDescription),
                               PackageFileBytesRetrievalDateTimeUtc = DateTime.UtcNow,
-                              AreDependenciesBundled = bundleAllDependencies
                           };
 
             return ret;

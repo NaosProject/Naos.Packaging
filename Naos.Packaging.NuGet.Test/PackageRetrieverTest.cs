@@ -30,8 +30,7 @@ namespace Naos.Packaging.NuGet.Test
 
             var defaultWorkingDirectory = @"D:\Temp\NewNuGet";
             var pm = new PackageRetriever(repoConfig, defaultWorkingDirectory);
-            var bundleAllDependencies = false;
-            var package = pm.GetPackage(new PackageDescription { Id = "ThisIsPackage" }, bundleAllDependencies);
+            var package = pm.GetPackage(new PackageDescription { Id = "ThisIsPackage" });
             Assert.NotNull(package.PackageFileBytes);
         }
 
@@ -40,8 +39,7 @@ namespace Naos.Packaging.NuGet.Test
         {
             var defaultWorkingDirectory = @"D:\Temp\NewNuGet";
             var pm = new PackageRetriever(defaultWorkingDirectory);
-            var bundleAllDependencies = false;
-            var package = pm.GetPackage(new PackageDescription { Id = "Newtonsoft.Json" }, bundleAllDependencies);
+            var package = pm.GetPackage(new PackageDescription { Id = "Newtonsoft.Json" });
             Assert.NotNull(package.PackageFileBytes);
         }
 
