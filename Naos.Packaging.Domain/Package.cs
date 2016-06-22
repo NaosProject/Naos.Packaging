@@ -27,10 +27,5 @@ namespace Naos.Packaging.Domain
         /// Gets or sets the date and time UTC that the package file bytes were retrieved.
         /// </summary>
         public DateTime PackageFileBytesRetrievalDateTimeUtc { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether or not the dependencies have been bundled with the specific package.
-        /// </summary>
-        public bool AreDependenciesBundled { get; set; }
     }
 }

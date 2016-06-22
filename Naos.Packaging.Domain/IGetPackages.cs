@@ -34,17 +34,15 @@ namespace Naos.Packaging.Domain
         /// Gets package file for a package description.
         /// </summary>
         /// <param name="packageDescription">Package description to get file for.</param>
-        /// <param name="bundleAllDependencies">Bundle all dependant assemblies into the package file (default is FALSE).</param>
         /// <returns>Package (description and file).</returns>
-        Package GetPackage(PackageDescription packageDescription, bool bundleAllDependencies = false);
+        Package GetPackage(PackageDescription packageDescription);
 
         /// <summary>
         /// Gets the bytes of the package file for a package description (as of time of execution).
         /// </summary>
         /// <param name="packageDescription">Package description to get file for.</param>
-        /// <param name="bundleAllDependencies">Bundle all dependant assemblies into the package file (default is FALSE).</param>
         /// <returns>Bytes of package file.</returns>
-        byte[] GetPackageFile(PackageDescription packageDescription, bool bundleAllDependencies = false);
+        byte[] GetPackageFile(PackageDescription packageDescription);
 
         /// <summary>
         /// Gets the contents of a file (as a string) matching the search pattern for the package in question (will decompress and search through the contents of the package).
