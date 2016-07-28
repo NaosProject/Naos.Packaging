@@ -76,10 +76,12 @@ namespace Naos.Packaging.NuGet
 
         private readonly bool includePrivateRepository;
 
+        private readonly global::NuGet.Logging.ILogger logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NuGetPackageManager"/> class.
         /// </summary>
-        public NuGetPackageManager() : this(0, null, null, null, null, false)
+        public NuGetPackageManager() : this(0, null, null, null, null, false, s => { })
         {
         }
 
@@ -91,23 +93,20 @@ namespace Naos.Packaging.NuGet
         /// <param name="privateRepositoryUrl">Source URL of a private repository.</param>
         /// <param name="privateRepositoryUsername">Username of a private repository.</param>
         /// <param name="privateRepositoryPassword">Password of a private repository.</param>
+        /// <param name="logger">Action to log information emitted during execution of methods.</param>
         public NuGetPackageManager(
             int privateRepositoryProtocolVersion,
             string privateRepositorySourceName,
             string privateRepositoryUrl,
             string privateRepositoryUsername,
-            string privateRepositoryPassword) : this(privateRepositoryProtocolVersion, privateRepositorySourceName, privateRepositoryUrl, privateRepositoryUsername, privateRepositoryPassword, true)
+            string privateRepositoryPassword,
+            Action<string> logger) : this(privateRepositoryProtocolVersion, privateRepositorySourceName, privateRepositoryUrl, privateRepositoryUsername, privateRepositoryPassword, true, logger)
         {
         }
 
-        private NuGetPackageManager(
-            int privateRepositoryProtocolVersion, 
-            string privateRepositorySourceName, 
-            string privateRepositoryUrl, 
-            string privateRepositoryUsername, 
-            string privateRepositoryPassword,
-            bool includePrivateRepository)
+        private NuGetPackageManager(int privateRepositoryProtocolVersion, string privateRepositorySourceName, string privateRepositoryUrl, string privateRepositoryUsername, string privateRepositoryPassword, bool includePrivateRepository, Action<string> logger)
         {
+            this.logger = new ActionWrapperLogger(logger);
             this.includePrivateRepository = includePrivateRepository;
             this.privateRepositoryProtocolVersion = privateRepositoryProtocolVersion;
             this.privateRepositorySourceName = privateRepositorySourceName;
@@ -153,6 +152,7 @@ namespace Naos.Packaging.NuGet
                 folderProject,
                 resolutionContext,
                 this.sourceRepositories,
+                this.logger,
                 CancellationToken.None);
 
             return version == null ? null : version.ToString();
@@ -248,7 +248,7 @@ namespace Naos.Packaging.NuGet
                                                  this.privateRepositorySourceName)
                                                  {
                                                      UserName = this.privateRepositoryUsername,
-                                                     Password = this.privateRepositoryPassword,
+                                                     PasswordText = this.privateRepositoryPassword,
                                                      IsPasswordClearText = true,
                                                      ProtocolVersion = this.privateRepositoryProtocolVersion,
                                                  };
@@ -270,6 +270,65 @@ namespace Naos.Packaging.NuGet
                                                ProtocolVersion = this.privateRepositoryProtocolVersion,
                                            };
             return privatePackageSource;
+        }
+    }
+
+    /// <summary>
+    /// Logger adapter to allow for generic message handler to be provided.
+    /// </summary>
+    internal class ActionWrapperLogger : global::NuGet.Logging.ILogger
+    {
+        private readonly Action<string> logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ActionWrapperLogger"/> class.
+        /// </summary>
+        /// <param name="logger">Action to handle log messages with.</param>
+        public ActionWrapperLogger(Action<string> logger)
+        {
+            this.logger = logger;
+        }
+
+        /// <inheritdoc />
+        public void LogDebug(string data)
+        {
+            this.logger(data);
+        }
+
+        /// <inheritdoc />
+        public void LogVerbose(string data)
+        {
+            this.logger(data);
+        }
+
+        /// <inheritdoc />
+        public void LogInformation(string data)
+        {
+            this.logger(data);
+        }
+
+        /// <inheritdoc />
+        public void LogMinimal(string data)
+        {
+            this.logger(data);
+        }
+
+        /// <inheritdoc />
+        public void LogWarning(string data)
+        {
+            this.logger(data);
+        }
+
+        /// <inheritdoc />
+        public void LogError(string data)
+        {
+            this.logger(data);
+        }
+
+        /// <inheritdoc />
+        public void LogSummary(string data)
+        {
+            this.logger(data);
         }
     }
 

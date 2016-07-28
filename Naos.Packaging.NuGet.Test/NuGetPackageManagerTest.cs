@@ -16,7 +16,7 @@ namespace Naos.Packaging.NuGet.Test
         [Fact]
         public void UnSupportedProtocolVersionThrows()
         {
-            Action action = () => new NuGetPackageManager(5, "SourceName", "RepoUrl", "UserName", "Password");
+            Action action = () => new NuGetPackageManager(5, "SourceName", "RepoUrl", "UserName", "Password", str => { });
 
             var ex = Assert.Throws<NotSupportedException>(action);
             Assert.Equal("Version: 5 is not currently supported.", ex.Message);
@@ -28,7 +28,7 @@ namespace Naos.Packaging.NuGet.Test
             var defaultWorkingDirectory = @"D:\Temp\NewNuGet";
             var downloadDirectory = Path.Combine(defaultWorkingDirectory, Guid.NewGuid() + ".tmp");
 
-            var pm = new NuGetPackageManager(2, "ThisIsGalleryName", "https://ci.appveyor.com/nuget/XXX", "ThisIsUser", "ThisIsPassword");
+            var pm = new NuGetPackageManager(2, "ThisIsGalleryName", "https://ci.appveyor.com/nuget/XXX", "ThisIsUser", "ThisIsPassword", str => { });
 
             var includeUnlisted = true;
             var includePreRelease = true;

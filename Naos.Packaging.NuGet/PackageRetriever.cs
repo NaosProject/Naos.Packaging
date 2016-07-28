@@ -32,7 +32,8 @@ namespace Naos.Packaging.NuGet
         /// Initializes a new instance of the <see cref="PackageRetriever"/> class.
         /// </summary>
         /// <param name="defaultWorkingDirectory">Working directory to download temporary files to.</param>
-        public PackageRetriever(string defaultWorkingDirectory) : this(null, defaultWorkingDirectory)
+        /// <param name="logger">Action to handle log messages with.</param>
+        public PackageRetriever(string defaultWorkingDirectory, Action<string> logger) : this(null, defaultWorkingDirectory, logger)
         {
         }
 
@@ -41,7 +42,8 @@ namespace Naos.Packaging.NuGet
         /// </summary>
         /// <param name="repoConfig">Package repository configuration.</param>
         /// <param name="defaultWorkingDirectory">Working directory to download temporary files to.</param>
-        public PackageRetriever(PackageRepositoryConfiguration repoConfig, string defaultWorkingDirectory)
+        /// <param name="logger">Action to handle log messages with.</param>
+        public PackageRetriever(PackageRepositoryConfiguration repoConfig, string defaultWorkingDirectory, Action<string> logger)
         {
             this.defaultWorkingDirectory = defaultWorkingDirectory;
 
@@ -52,7 +54,8 @@ namespace Naos.Packaging.NuGet
                                           repoConfig.SourceName,
                                           repoConfig.Source,
                                           repoConfig.Username,
-                                          repoConfig.ClearTextPassword);
+                                          repoConfig.ClearTextPassword,
+                                          logger);
         }
 
         /// <summary>
