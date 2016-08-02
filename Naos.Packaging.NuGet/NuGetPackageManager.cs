@@ -152,7 +152,7 @@ namespace Naos.Packaging.NuGet
                 folderProject,
                 resolutionContext,
                 this.sourceRepositories,
-                this.logger,
+                new global::NuGet.Logging.NullLogger(), 
                 CancellationToken.None);
 
             return version == null ? null : version.ToString();
@@ -201,9 +201,10 @@ namespace Naos.Packaging.NuGet
             var resourceProvidersV2 = global::NuGet.Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(null).ToList();
             var resourceProvidersV3 = global::NuGet.Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(null).ToList();
 
-            var publicPackageSourceV2 = new global::NuGet.Configuration.PackageSource(
+            /* var publicPackageSourceV2 = new global::NuGet.Configuration.PackageSource(
                 NuGetConfigFile.NuGetPublicGalleryUrlV2,
                 NuGetConfigFile.NuGetPublicGalleryNameV2);
+                */
 
             var publicPackageSourceV3 = new global::NuGet.Configuration.PackageSource(
                 NuGetConfigFile.NuGetPublicGalleryUrlV3,
@@ -232,7 +233,7 @@ namespace Naos.Packaging.NuGet
                 ret.Add(new SourceRepository(privatePackageSource,  resourceProviders));
             }
 
-            ret.Add(new SourceRepository(publicPackageSourceV2, resourceProvidersV2));
+            // ret.Add(new SourceRepository(publicPackageSourceV2, resourceProvidersV2));
             ret.Add(new SourceRepository(publicPackageSourceV3, resourceProvidersV3));
 
             return ret;
