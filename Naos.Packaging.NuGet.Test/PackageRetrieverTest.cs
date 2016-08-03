@@ -29,7 +29,7 @@ namespace Naos.Packaging.NuGet.Test
             };
 
             var defaultWorkingDirectory = @"D:\Temp\NewNuGet";
-            var pm = new PackageRetriever(repoConfig, defaultWorkingDirectory);
+            var pm = new PackageRetriever(defaultWorkingDirectory, repoConfig);
             var package = pm.GetPackage(new PackageDescription { Id = "ThisIsPackage" });
             Assert.NotNull(package.PackageFileBytes);
         }
