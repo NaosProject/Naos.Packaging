@@ -23,7 +23,7 @@ namespace Naos.Packaging.NuGet
     /// <summary>
     /// NuGet specific implementation of <see cref="IGetPackages"/>.
     /// </summary>
-    public class PackageRetriever : IGetPackages
+    public class PackageRetriever : IGetPackages, IDisposable
     {
         private const string DirectoryDateTimeToStringFormat = "yyyy-MM-dd--HH-mm-ss--ffff";
 
@@ -390,6 +390,31 @@ namespace Naos.Packaging.NuGet
                     .ToList();
 
             return ret;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Disposes the class.
+        /// </summary>
+        /// <param name="disposing">Determines if managed resources should be disposed.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                try
+                {
+                    Directory.Delete(this.tempDirectory, true);
+                }
+                catch (Exception)
+                {                    
+                }
+            }
         }
 
         private string RunNugetCommandLine(string arguments)
