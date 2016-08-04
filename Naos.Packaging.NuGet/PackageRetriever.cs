@@ -8,6 +8,7 @@ namespace Naos.Packaging.NuGet
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.IO.Compression;
@@ -17,57 +18,108 @@ namespace Naos.Packaging.NuGet
 
     using Naos.Packaging.Domain;
 
+    using OBeautifulCode.Reflection;
+
     /// <summary>
     /// NuGet specific implementation of <see cref="IGetPackages"/>.
     /// </summary>
-    public class PackageRetriever : IGetPackages
+    public class PackageRetriever : IGetPackages, IDisposable
     {
         private const string DirectoryDateTimeToStringFormat = "yyyy-MM-dd--HH-mm-ss--ffff";
 
+        private const string NugetExeFileName = "nuget.exe";
+
         private readonly string defaultWorkingDirectory;
 
-        private readonly IManageNuGetPackages nugetManager;
+        private readonly string nugetExeFilePath;
+
+        private readonly string nugetConfigFilePath;
+
+        private readonly string tempDirectory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PackageRetriever"/> class.
         /// </summary>
-        /// <param name="defaultWorkingDirectory">Working directory to download temporary files to.</param>
-        public PackageRetriever(string defaultWorkingDirectory) : this(null, defaultWorkingDirectory)
+        /// <param name="defaultWorkingDirectory">
+        /// Working directory to download temporary files to.
+        /// </param>
+        /// <param name="repoConfig">
+        /// Optional.  Package repository configuration.  
+        /// If null then only the public gallery will be configured.
+        /// </param>
+        /// <param name="nugetExeFilePath">
+        /// Optional.  Path to nuget.exe.  
+        /// If null then an embedded copy of nuget.exe will be used.
+        /// </param>
+        /// <param name="nugetConfigFilePath">
+        /// Optional.  Path a nuget config xml file.  If null then a config 
+        /// file will be written/used.  This file will enable the public gallery
+        /// as well as the gallery specified in <paramref name="repoConfig"/>.
+        /// </param>
+        public PackageRetriever(string defaultWorkingDirectory, PackageRepositoryConfiguration repoConfig = null, string nugetExeFilePath = null, string nugetConfigFilePath = null)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PackageRetriever"/> class.
-        /// </summary>
-        /// <param name="repoConfig">Package repository configuration.</param>
-        /// <param name="defaultWorkingDirectory">Working directory to download temporary files to.</param>
-        public PackageRetriever(PackageRepositoryConfiguration repoConfig, string defaultWorkingDirectory)
-        {
-            this.defaultWorkingDirectory = defaultWorkingDirectory;
-
-            this.nugetManager = repoConfig == null
-                                    ? new NuGetPackageManager()
-                                    : new NuGetPackageManager(
-                                          repoConfig.ProtocolVersion,
-                                          repoConfig.SourceName,
-                                          repoConfig.Source,
-                                          repoConfig.Username,
-                                          repoConfig.ClearTextPassword);
-        }
-
-        /// <summary>
-        /// Designed to chain with the constructor this will make sure the default working directory is cleaned up (for failed previous runs).
-        /// </summary>
-        /// <returns>Current object to allow chaining with constructor.</returns>
-        public PackageRetriever WithCleanWorkingDirectory()
-        {
-            if (Directory.Exists(this.defaultWorkingDirectory))
+            // check parameters
+            if (!Directory.Exists(defaultWorkingDirectory))
             {
-                Directory.Delete(this.defaultWorkingDirectory, true);
+                throw new ArgumentException("The specified default working directory does not exist.");
             }
 
-            Directory.CreateDirectory(this.defaultWorkingDirectory);
-            return this;
+            if ((repoConfig != null) && (nugetConfigFilePath != null))
+            {
+                throw new ArgumentException("A repo config was specified along with a config XML file path.  If you would like to include a package repository, either include it in the config XML or don't specify a config XML.");
+            }
+
+            // setup temp directory
+            this.defaultWorkingDirectory = defaultWorkingDirectory;
+            this.tempDirectory = Path.Combine(this.defaultWorkingDirectory, Path.GetRandomFileName());
+            Directory.CreateDirectory(this.tempDirectory);
+
+            // write nuget.exe to disk if needed
+            if (nugetExeFilePath == null)
+            {
+                nugetExeFilePath = Path.Combine(this.tempDirectory, NugetExeFileName);
+                using (var nugetExeStream = AssemblyHelper.OpenEmbeddedResourceStream(NugetExeFileName))
+                {
+                    using (var fileStream = new FileStream(nugetExeFilePath, FileMode.Create, FileAccess.Write))
+                    {
+                        nugetExeStream.CopyTo(fileStream);
+                    }
+                }
+            }
+
+            this.nugetExeFilePath = nugetExeFilePath;
+
+            // write NuGet.config to disk if needed
+            if (nugetConfigFilePath == null)
+            {
+                nugetConfigFilePath = Path.Combine(this.tempDirectory, "NuGet.config");
+                string packageSource = string.Empty;
+                string packageSourceCredentials = string.Empty;
+                if (repoConfig != null)
+                {
+                    packageSource = $@"<add key=""{repoConfig.SourceName}"" value=""{repoConfig.Source}"" />";
+                    packageSourceCredentials = $@"<packageSourceCredentials>
+                                                    <{repoConfig.SourceName}>
+                                                      <add key=""Username"" value=""{repoConfig.Username}"" />
+                                                      <add key=""ClearTextPassword"" value=""{repoConfig.ClearTextPassword}"" />
+                                                    </{repoConfig.SourceName}>
+                                                  </packageSourceCredentials>";
+                }
+
+                var configXml = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                                   <configuration>
+                                     <packageSources>
+                                       {packageSource}
+                                       <add key=""nugetv2"" value=""https://www.nuget.org/api/v2/"" />
+                                       <add key=""nugetv3"" value=""https://api.nuget.org/v3/index.json"" />
+                                     </packageSources>
+                                     {packageSourceCredentials}
+                                   </configuration>";
+
+                File.WriteAllText(nugetConfigFilePath, configXml, Encoding.UTF8);
+            }
+
+            this.nugetConfigFilePath = nugetConfigFilePath;
         }
 
         /// <inheritdoc />
@@ -232,9 +284,47 @@ namespace Naos.Packaging.NuGet
         /// <inheritdoc />
         public string GetLatestVersion(string packageId)
         {
-            var latestVersionTask = this.nugetManager.GetLatestVersionAsync(packageId, true, true);
-            latestVersionTask.Wait();
-            return latestVersionTask.Result;
+            if (string.IsNullOrWhiteSpace(packageId))
+            {
+                throw new ArgumentException("packageId cannot be null nor whitespace.");
+            }
+
+            // run nuget
+            var arguments = $"list {packageId} -prerelease -noninteractive";
+            var output = this.RunNugetCommandLine(arguments);
+            var outputLines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+
+            /* parse output.  output should look like this:
+            Using credentials from config.UserName: user@domain.com
+            AcklenAvenue.Queueing.Serializers.JsonNet 1.0.1.39
+            CacheManager.Serialization.Json 0.8.0
+            com.egis.hue.sdk 1.0.0.2
+            Common.Serializer.NewtonsoftJson 0.2.0-pre
+            */
+
+            string version = null;
+            var isFirstLine = true;
+            foreach (var outputLine in outputLines)
+            {
+                if (isFirstLine)
+                {
+                    isFirstLine = false;
+                    continue;
+                }
+
+                var tokens = outputLine.Split(' ');
+                if (tokens[0].Equals(packageId, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (version != null)
+                    {
+                        throw new InvalidOperationException($"Package {packageId} is contained within multiple galleries.");
+                    }
+
+                    version = tokens[1].Trim();
+                }
+            }
+
+            return version;
         }
 
         /// <inheritdoc />
@@ -264,13 +354,32 @@ namespace Naos.Packaging.NuGet
                                   ? packageDescription.Version
                                   : latestVersion;
 
-                this.nugetManager.DownloadPackageToPathAsync(
-                    packageDescription.Id,
-                    packageVersion,
-                    workingDirectory,
-                    includeDependencies,
-                    true,
-                    true).Wait();
+                string toInstall;
+                if (includeDependencies)
+                {
+                    toInstall = packageDescription.Id;
+                }
+                else
+                {
+                    // the only way to install without dependencies is to create a packages.config xml file
+                    // to install with dependencies we can simply point nuget.exe at the package id
+                    // the file must be called packages.config
+                    var packagesConfigXml = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                                           <packages>
+                                             <package id=""{packageDescription.Id}"" version=""{packageVersion}"" />
+                                           </packages>";
+                    string packagesConfigXmlDirectory = Path.Combine(this.tempDirectory, Path.GetRandomFileName());
+                    Directory.CreateDirectory(packagesConfigXmlDirectory);
+                    string packagesConfigXmlFilePath = Path.Combine(packagesConfigXmlDirectory, "packages.config");
+                    File.WriteAllText(packagesConfigXmlFilePath, packagesConfigXml, Encoding.UTF8);
+                    toInstall = $"\"{packagesConfigXmlFilePath}\"";
+                }
+
+                // there needs to be a space at the end of the output directory path
+                // it doesn't matter whether the output directory has a trailing backslash before the space is added
+                // https://stackoverflow.com/questions/17322147/illegal-characters-in-path-for-nuget-pack
+                var arguments = $"install {toInstall} -outputdirectory \"{workingDirectory} \" -version {packageVersion} -prerelease -noninteractive";
+                this.RunNugetCommandLine(arguments);                
             }
 
             var workingDirectorySnapshotAfter = Directory.GetFiles(workingDirectory, "*", SearchOption.AllDirectories);
@@ -281,6 +390,67 @@ namespace Naos.Packaging.NuGet
                     .ToList();
 
             return ret;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Disposes the class.
+        /// </summary>
+        /// <param name="disposing">Determines if managed resources should be disposed.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                try
+                {
+                    Directory.Delete(this.tempDirectory, true);
+                }
+                catch (Exception)
+                {                    
+                }
+            }
+        }
+
+        private string RunNugetCommandLine(string arguments)
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = this.nugetExeFilePath,
+                    Arguments = $"{arguments} -configfile \"{this.nugetConfigFilePath}\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    ErrorDialog = false
+                }
+            };
+
+            using (process)
+            {
+                if (!process.Start())
+                {
+                    throw new InvalidOperationException("nuget.exe could not be started.");
+                }
+
+                string output = process.StandardOutput.ReadToEnd();
+                string error = process.StandardError.ReadToEnd();
+                process.WaitForExit();
+
+                if (process.ExitCode != 0)
+                {
+                    throw new InvalidOperationException("nuget.exe reported an error: " + error);
+                }
+
+                return output;
+            }
         }
     }
 }
