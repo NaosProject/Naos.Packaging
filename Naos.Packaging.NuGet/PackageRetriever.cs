@@ -306,7 +306,7 @@ namespace Naos.Packaging.NuGet
             var arguments = $"list {packageId} -prerelease -noninteractive";
             consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list packages for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
             var output = this.RunNugetCommandLine(arguments);
-            consoleOutputCallback?.Invoke(output + Environment.NewLine);
+            consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
             var outputLines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
             /* parse output.  output should look like this:
@@ -396,7 +396,7 @@ namespace Naos.Packaging.NuGet
                 var arguments = $"install {toInstall} -outputdirectory \"{workingDirectory} \" -version {packageVersion} -prerelease -noninteractive";
                 consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to download '{packageDescription.Id}-{packageVersion}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
                 var output = this.RunNugetCommandLine(arguments);
-                consoleOutputCallback?.Invoke(output + Environment.NewLine);
+                consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
             }
 
             var workingDirectorySnapshotAfter = Directory.GetFiles(workingDirectory, "*", SearchOption.AllDirectories);
