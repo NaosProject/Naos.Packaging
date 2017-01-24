@@ -61,6 +61,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include=".Spritely.Recipes\Redo\BackOffStrategy.cs" />
+    <Compile Include=".Spritely.Recipes\Redo\RetriableAction.cs" />
+    <Compile Include=".Spritely.Recipes\Redo\RetriableActionAsync.cs" />
+    <Compile Include=".Spritely.Recipes\Redo\RetriableFunction.cs" />
+    <Compile Include=".Spritely.Recipes\Redo\RetriableFunctionAsync.cs" />
+    <Compile Include=".Spritely.Recipes\Redo\Using.cs" />
     <Compile Include="PackageRetriever.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

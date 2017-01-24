@@ -38,5 +38,12 @@ namespace Naos.Packaging.Domain
                 string.IsNullOrEmpty(this.Version) ? "[UnspecifiedVersion]" : this.Version);
             return ret;
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            var result = GetIdDotVersionString();
+            return result;
+        }
     }
 }

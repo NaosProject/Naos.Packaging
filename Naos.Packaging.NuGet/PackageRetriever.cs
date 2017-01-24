@@ -20,6 +20,8 @@ namespace Naos.Packaging.NuGet
 
     using OBeautifulCode.Reflection;
 
+    using Spritely.Redo;
+
     /// <summary>
     /// NuGet specific implementation of <see cref="IGetPackages"/>.
     /// </summary>
@@ -37,6 +39,8 @@ namespace Naos.Packaging.NuGet
 
         private readonly string tempDirectory;
 
+        private readonly Action<string> consoleOutputCallback;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PackageRetriever"/> class.
         /// </summary>
@@ -44,19 +48,22 @@ namespace Naos.Packaging.NuGet
         /// Working directory to download temporary files to.
         /// </param>
         /// <param name="repoConfig">
-        /// Optional.  Package repository configuration.  
+        /// Optional.  Package repository configuration.
         /// If null then only the public gallery will be configured.
         /// </param>
         /// <param name="nugetExeFilePath">
-        /// Optional.  Path to nuget.exe.  
+        /// Optional.  Path to nuget.exe.
         /// If null then an embedded copy of nuget.exe will be used.
         /// </param>
         /// <param name="nugetConfigFilePath">
-        /// Optional.  Path a nuget config xml file.  If null then a config 
+        /// Optional.  Path a nuget config xml file.  If null then a config
         /// file will be written/used.  This file will enable the public gallery
         /// as well as the gallery specified in <paramref name="repoConfig"/>.
         /// </param>
-        public PackageRetriever(string defaultWorkingDirectory, PackageRepositoryConfiguration repoConfig = null, string nugetExeFilePath = null, string nugetConfigFilePath = null)
+        /// <param name="consoleOutputCallback">
+        /// Optional.  If specified, then console output will be written to this action.
+        /// </param>
+        public PackageRetriever(string defaultWorkingDirectory, PackageRepositoryConfiguration repoConfig = null, string nugetExeFilePath = null, string nugetConfigFilePath = null, Action<string> consoleOutputCallback = null)
         {
             // check parameters
             if (!Directory.Exists(defaultWorkingDirectory))
@@ -120,6 +127,7 @@ namespace Naos.Packaging.NuGet
             }
 
             this.nugetConfigFilePath = nugetConfigFilePath;
+            this.consoleOutputCallback = consoleOutputCallback;
         }
 
         /// <inheritdoc />
@@ -134,7 +142,12 @@ namespace Naos.Packaging.NuGet
                 this.defaultWorkingDirectory,
                 "Down-" + DateTime.Now.ToString(DirectoryDateTimeToStringFormat));
 
-            var packageFilePath = this.DownloadPackages(new[] { packageDescription }, workingDirectory).Single();
+            var packageFilePath =
+                Using
+                    .LinearBackOff(TimeSpan.FromSeconds(5))
+                    .Run(() => this.DownloadPackages(new[] { packageDescription }, workingDirectory).Single())
+                    .Now();
+
             var ret = File.ReadAllBytes(packageFilePath);
 
             // clean up temp files
@@ -291,7 +304,9 @@ namespace Naos.Packaging.NuGet
 
             // run nuget
             var arguments = $"list {packageId} -prerelease -noninteractive";
+            consoleOutputCallback?.Invoke($"Run nuget.exe ({this.nugetExeFilePath}) to list packages for packageId '{packageId}', using the following arguments: {arguments}");
             var output = this.RunNugetCommandLine(arguments);
+            consoleOutputCallback?.Invoke(output);
             var outputLines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
             /* parse output.  output should look like this:
@@ -379,7 +394,9 @@ namespace Naos.Packaging.NuGet
                 // it doesn't matter whether the output directory has a trailing backslash before the space is added
                 // https://stackoverflow.com/questions/17322147/illegal-characters-in-path-for-nuget-pack
                 var arguments = $"install {toInstall} -outputdirectory \"{workingDirectory} \" -version {packageVersion} -prerelease -noninteractive";
-                this.RunNugetCommandLine(arguments);                
+                consoleOutputCallback?.Invoke($"Run nuget.exe ({this.nugetExeFilePath}) to download '{packageDescription}', using the following arguments: {arguments}");
+                var output = this.RunNugetCommandLine(arguments);
+                consoleOutputCallback?.Invoke(output);
             }
 
             var workingDirectorySnapshotAfter = Directory.GetFiles(workingDirectory, "*", SearchOption.AllDirectories);
@@ -412,7 +429,7 @@ namespace Naos.Packaging.NuGet
                     Directory.Delete(this.tempDirectory, true);
                 }
                 catch (Exception)
-                {                    
+                {
                 }
             }
         }
