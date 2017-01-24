@@ -304,9 +304,9 @@ namespace Naos.Packaging.NuGet
 
             // run nuget
             var arguments = $"list {packageId} -prerelease -noninteractive";
-            consoleOutputCallback?.Invoke($"Run nuget.exe ({this.nugetExeFilePath}) to list packages for packageId '{packageId}', using the following arguments: {arguments}");
+            consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list packages for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
             var output = this.RunNugetCommandLine(arguments);
-            consoleOutputCallback?.Invoke(output);
+            consoleOutputCallback?.Invoke(output + Environment.NewLine);
             var outputLines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
             /* parse output.  output should look like this:
@@ -394,9 +394,9 @@ namespace Naos.Packaging.NuGet
                 // it doesn't matter whether the output directory has a trailing backslash before the space is added
                 // https://stackoverflow.com/questions/17322147/illegal-characters-in-path-for-nuget-pack
                 var arguments = $"install {toInstall} -outputdirectory \"{workingDirectory} \" -version {packageVersion} -prerelease -noninteractive";
-                consoleOutputCallback?.Invoke($"Run nuget.exe ({this.nugetExeFilePath}) to download '{packageDescription}', using the following arguments: {arguments}");
+                consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to download '{packageDescription.Id}-{packageVersion}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
                 var output = this.RunNugetCommandLine(arguments);
-                consoleOutputCallback?.Invoke(output);
+                consoleOutputCallback?.Invoke(output + Environment.NewLine);
             }
 
             var workingDirectorySnapshotAfter = Directory.GetFiles(workingDirectory, "*", SearchOption.AllDirectories);
