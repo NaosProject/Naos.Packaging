@@ -42,7 +42,7 @@ namespace Naos.Packaging.Domain
         /// <inheritdoc />
         public override string ToString()
         {
-            var result = GetIdDotVersionString();
+            var result = this.GetIdDotVersionString();
             return result;
         }
     }
