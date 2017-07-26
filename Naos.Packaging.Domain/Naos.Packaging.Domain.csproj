@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include=".OBeautifulCode.Recipes\OBeautifulCode.Math\HashCodeHelper.cs" />
     <Compile Include="IGetPackages.cs" />
     <Compile Include="Package.cs" />
     <Compile Include="PackageDescription.cs" />
@@ -53,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Naos.Packaging.Domain.override-nuspec" />
+    <None Include="packages.config" />
     <None Include="Settings.StyleCop" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

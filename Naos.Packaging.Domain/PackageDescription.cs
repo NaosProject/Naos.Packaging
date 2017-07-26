@@ -6,10 +6,14 @@
 
 namespace Naos.Packaging.Domain
 {
+    using System;
+
+    using OBeautifulCode.Math;
+
     /// <summary>
     /// Model object of a packaged piece of software.
     /// </summary>
-    public class PackageDescription
+    public class PackageDescription : IEquatable<PackageDescription>
     {
         /// <summary>
         /// The package id for a null package that will run through without any interaction.
@@ -45,5 +49,37 @@ namespace Naos.Packaging.Domain
             var result = this.GetIdDotVersionString();
             return result;
         }
+
+        #region Equality
+
+        /// <inheritdoc />
+        public static bool operator ==(PackageDescription first, PackageDescription second)
+        {
+            if (ReferenceEquals(first, second))
+            {
+                return true;
+            }
+
+            if (ReferenceEquals(first, null) || ReferenceEquals(second, null))
+            {
+                return false;
+            }
+
+            return (first.Id == second.Id) && (first.Version== second.Version);
+        }
+
+        /// <inheritdoc />
+        public static bool operator !=(PackageDescription first, PackageDescription second) => !(first == second);
+
+        /// <inheritdoc />
+        public bool Equals(PackageDescription other) => this == other;
+
+        /// <inheritdoc />
+        public override bool Equals(object obj) => this == (obj as PackageDescription);
+
+        /// <inheritdoc />
+        public override int GetHashCode() => HashCodeHelper.Initialize().Hash(this.Id).Hash(this.Version).Value;
+
+        #endregion
     }
 }
