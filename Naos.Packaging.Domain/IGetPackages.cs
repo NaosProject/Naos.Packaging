@@ -31,6 +31,22 @@ namespace Naos.Packaging.Domain
             string packageRepositorySourceName = null);
 
         /// <summary>
+        /// Gets all versions of the package id.
+        /// </summary>
+        /// <param name="packageId">The package identifier.</param>
+        /// <param name="includePrerelease">Optional.  Include pre-release packages?  Default is true.</param>
+        /// <param name="includeDelisted">Optional.  Include delisted packages?  Default is false.</param>
+        /// <param name="packageRepositorySourceName">Optional.  The source name of the package repository to query.  Default is null - all configured reposistories will be queried.</param>
+        /// <returns>
+        /// Descriptions of all versions of the package id specified.
+        /// </returns>
+        IReadOnlyCollection<PackageDescription> GetAllVersions(
+            string packageId,
+            bool includePrerelease = true,
+            bool includeDelisted = false,
+            string packageRepositorySourceName = null);
+
+        /// <summary>
         /// Downloads the specified packages.
         /// </summary>
         /// <param name="packageDescriptions">Description of packages to download.</param>

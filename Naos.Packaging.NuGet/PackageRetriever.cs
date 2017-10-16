@@ -331,7 +331,7 @@ namespace Naos.Packaging.NuGet
             var sourceArgument = this.BuildSourceUrlArgumentFromSourceName(packageRepositorySourceName);
             arguments = $"{arguments} {sourceArgument}";
 
-            consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list packages for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
+            consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list latest package for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
             var output = this.RunNugetCommandLine(arguments);
             consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
             var outputLines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
@@ -369,6 +369,39 @@ namespace Naos.Packaging.NuGet
             }
 
             return result;
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyCollection<PackageDescription> GetAllVersions(
+            string packageId,
+            bool includePrerelease = true,
+            bool includeDelisted = false,
+            string packageRepositorySourceName = null)
+        {
+            if (string.IsNullOrWhiteSpace(packageId))
+            {
+                throw new ArgumentException($"{nameof(packageId)} must be specified.");
+            }
+
+            var arguments = $"list {packageId} -allversions";
+            if (includePrerelease)
+            {
+                arguments = $"{arguments} -prerelease";
+            }
+
+            if (includeDelisted)
+            {
+                arguments = $"{arguments} -includedelisted";
+            }
+
+            var sourceArgument = this.BuildSourceUrlArgumentFromSourceName(packageRepositorySourceName);
+            arguments = $"{arguments} {sourceArgument}";
+
+            consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list all packages for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
+            var output = this.RunNugetCommandLine(arguments);
+            consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
+
+            throw new NotImplementedException("nuget.exe has a bug whereby only the latest version is returned");
         }
 
         /// <inheritdoc />
