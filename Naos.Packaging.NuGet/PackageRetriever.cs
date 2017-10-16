@@ -289,7 +289,7 @@ namespace Naos.Packaging.NuGet
                 // there needs to be a space at the end of the output directory path
                 // it doesn't matter whether the output directory has a trailing backslash before the space is added
                 // https://stackoverflow.com/questions/17322147/illegal-characters-in-path-for-nuget-pack
-                var arguments = $"install {toInstall} -outputdirectory \"{workingDirectory} \" -version {packageVersion} -prerelease -noninteractive";
+                var arguments = $"install {toInstall} -outputdirectory \"{workingDirectory} \" -version {packageVersion} -prerelease";
                 consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to download '{packageDescription.Id}-{packageVersion}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
                 var output = this.RunNugetCommandLine(arguments);
                 consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
@@ -314,7 +314,7 @@ namespace Naos.Packaging.NuGet
             }
 
             // run nuget
-            var arguments = $"list {packageId} -prerelease -noninteractive";
+            var arguments = $"list {packageId} -prerelease";
             consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list packages for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
             var output = this.RunNugetCommandLine(arguments);
             consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
@@ -540,12 +540,19 @@ namespace Naos.Packaging.NuGet
             string arguments,
             bool appendConfigFileArgument = true)
         {
+            if (appendConfigFileArgument)
+            {
+                arguments = $"{arguments} -configfile \"{this.nugetConfigFilePath}\"";
+            }
+
+            arguments = $"{arguments} -noninteractive";
+
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = this.nugetExeFilePath,
-                    Arguments = !appendConfigFileArgument ? arguments :  $"{arguments} -configfile \"{this.nugetConfigFilePath}\"",
+                    Arguments = arguments,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
