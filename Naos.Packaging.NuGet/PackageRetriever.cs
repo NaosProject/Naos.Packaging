@@ -309,7 +309,7 @@ namespace Naos.Packaging.NuGet
             consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
             var outputLines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
-            /* parse output.  output should look like this:
+            /* parse output.  output should look like this (the first line may or may not appear):
             Using credentials from config.UserName: user@domain.com
             AcklenAvenue.Queueing.Serializers.JsonNet 1.0.1.39
             CacheManager.Serialization.Json 0.8.0
@@ -318,12 +318,10 @@ namespace Naos.Packaging.NuGet
             */
 
             string version = null;
-            var isFirstLine = true;
             foreach (var outputLine in outputLines)
             {
-                if (isFirstLine)
+                if (outputLine.StartsWith("Using credentials from config"))
                 {
-                    isFirstLine = false;
                     continue;
                 }
 
