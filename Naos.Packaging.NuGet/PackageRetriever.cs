@@ -44,26 +44,21 @@ namespace Naos.Packaging.NuGet
         /// <summary>
         /// Initializes a new instance of the <see cref="PackageRetriever"/> class.
         /// </summary>
-        /// <param name="defaultWorkingDirectory">
-        /// Working directory to download temporary files to.
-        /// </param>
-        /// <param name="repoConfig">
-        /// Optional.  Package repository configuration.
-        /// If null then only the public gallery will be configured.
-        /// </param>
-        /// <param name="nugetExeFilePath">
-        /// Optional.  Path to nuget.exe.
-        /// If null then an embedded copy of nuget.exe will be used.
-        /// </param>
+        /// <param name="defaultWorkingDirectory">Working directory to download temporary files to.</param>
+        /// <param name="repoConfig">Optional.  Package repository configuration. If null then only the public gallery will be configured.</param>
+        /// <param name="nugetExeFilePath">Optional.  Path to nuget.exe. If null then an embedded copy of nuget.exe will be used.</param>
         /// <param name="nugetConfigFilePath">
         /// Optional.  Path a nuget config xml file.  If null then a config
         /// file will be written/used.  This file will enable the public gallery
         /// as well as the gallery specified in <paramref name="repoConfig"/>.
         /// </param>
-        /// <param name="consoleOutputCallback">
-        /// Optional.  If specified, then console output will be written to this action.
-        /// </param>
-        public PackageRetriever(string defaultWorkingDirectory, PackageRepositoryConfiguration repoConfig = null, string nugetExeFilePath = null, string nugetConfigFilePath = null, Action<string> consoleOutputCallback = null)
+        /// <param name="consoleOutputCallback">Optional.  If specified, then console output will be written to this action.</param>
+        public PackageRetriever(
+            string defaultWorkingDirectory,
+            PackageRepositoryConfiguration repoConfig = null,
+            string nugetExeFilePath = null,
+            string nugetConfigFilePath = null,
+            Action<string> consoleOutputCallback = null)
         {
             // check parameters
             if (!Directory.Exists(defaultWorkingDirectory))
@@ -131,7 +126,22 @@ namespace Naos.Packaging.NuGet
         }
 
         /// <inheritdoc />
-        public byte[] GetPackageFile(PackageDescription packageDescription)
+        public Package GetPackage(
+            PackageDescription packageDescription)
+        {
+            var ret = new Package
+                          {
+                              PackageDescription = packageDescription,
+                              PackageFileBytes = this.GetPackageFile(packageDescription),
+                              PackageFileBytesRetrievalDateTimeUtc = DateTime.UtcNow,
+                          };
+
+            return ret;
+        }
+
+        /// <inheritdoc />
+        public byte[] GetPackageFile(
+            PackageDescription packageDescription)
         {
             if (string.Equals(packageDescription.Id, PackageDescription.NullPackageId, StringComparison.CurrentCultureIgnoreCase))
             {
@@ -154,190 +164,6 @@ namespace Naos.Packaging.NuGet
             Directory.Delete(workingDirectory, true);
 
             return ret;
-        }
-
-        /// <inheritdoc />
-        public Package GetPackage(PackageDescription packageDescription)
-        {
-            var ret = new Package
-                          {
-                              PackageDescription = packageDescription,
-                              PackageFileBytes = this.GetPackageFile(packageDescription),
-                              PackageFileBytesRetrievalDateTimeUtc = DateTime.UtcNow,
-                          };
-
-            return ret;
-        }
-
-        /// <inheritdoc />
-        public IDictionary<string, string> GetMultipleFileContentsFromPackageAsStrings(
-            Package package,
-            string searchPattern,
-            Encoding encoding = null)
-        {
-            encoding = encoding ?? Encoding.UTF8;
-
-            var dictionaryBytes = this.GetMultipleFileContentsFromPackageAsBytes(package, searchPattern);
-            var dictionaryStrings = dictionaryBytes.ToDictionary(_ => _.Key, _ => encoding.GetString(_.Value));
-
-            return dictionaryStrings;
-        }
-
-        /// <inheritdoc />
-        public IDictionary<string, byte[]> GetMultipleFileContentsFromPackageAsBytes(
-            Package package,
-            string searchPattern)
-        {
-            if (string.Equals(package.PackageDescription.Id, PackageDescription.NullPackageId, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return new Dictionary<string, byte[]>();
-            }
-
-            // download package (decompressed)
-            var workingDirectory = Path.Combine(
-                this.defaultWorkingDirectory,
-                "PackageFileContentsSearch-" + DateTime.Now.ToString(DirectoryDateTimeToStringFormat));
-            var packageFilePath = Path.Combine(workingDirectory, "Package.zip");
-            Directory.CreateDirectory(workingDirectory);
-            File.WriteAllBytes(packageFilePath, package.PackageFileBytes);
-            ZipFile.ExtractToDirectory(packageFilePath, Directory.GetParent(packageFilePath).FullName);
-
-            // get list of files as fullpath strings
-            var files = Directory.GetFiles(workingDirectory, "*", SearchOption.AllDirectories);
-
-            // normalize slashes in searchPattern AND in file list
-            var normalizedSlashesSearchPattern = searchPattern.Replace(@"\", "/");
-            var normalizedSlashesFiles = files.Select(_ => _.Replace(@"\", "/"));
-            var filesToGetContentsFor =
-                normalizedSlashesFiles.Where(
-                    _ =>
-                    CultureInfo.CurrentCulture.CompareInfo.IndexOf(
-                        _,
-                        normalizedSlashesSearchPattern,
-                        CompareOptions.IgnoreCase) >= 0);
-
-            var ret = filesToGetContentsFor.ToDictionary(_ => _, File.ReadAllBytes);
-
-            // clean up temp files
-            Directory.Delete(workingDirectory, true);
-
-            return ret;
-        }
-
-        /// <inheritdoc />
-        public string GetVersionFromNuSpecFile(string nuSpecFileContents)
-        {
-            if (string.IsNullOrEmpty(nuSpecFileContents))
-            {
-                return null;
-            }
-
-            var missingMetaDataMessage = "Could not find metadata in the provided NuSpec.";
-            var multipleMetaDataMessage = "Found multiple metadata nodes in the provided NuSpec.";
-            var missingVersionMessage = "Could not find the version in the provided NuSpec.";
-            var multipleVersionMessage = "Found multiple version nodes in the provided NuSpec.";
-
-            try
-            {
-                var xmlDoc = new XmlDocument();
-                var sanitizedNuSpecFileContents = nuSpecFileContents.Replace("\ufeff", string.Empty); // strip the BOM as it makes XML.Load bomb...;
-                xmlDoc.LoadXml(sanitizedNuSpecFileContents);
-
-                var xpath = "/*[local-name()='package']/*[local-name()='metadata']";
-                var nodes = xmlDoc.SelectNodes(xpath);
-
-                if (nodes == null || nodes.Count == 0)
-                {
-                    throw new ArgumentException(missingMetaDataMessage);
-                }
-
-                if (nodes.Count > 1)
-                {
-                    throw new ArgumentException(multipleMetaDataMessage);
-                }
-
-                // only one node now
-                var childNodes = nodes[0];
-
-                var versionNodes = new List<XmlNode>();
-                foreach (XmlNode childNode in childNodes)
-                {
-                    if (childNode.Name == "version")
-                    {
-                        versionNodes.Add(childNode);
-                    }
-                }
-
-                if (versionNodes.Count == 0)
-                {
-                    throw new ArgumentException(missingVersionMessage);
-                }
-
-                if (versionNodes.Count > 1)
-                {
-                    throw new ArgumentException(multipleVersionMessage);
-                }
-
-                var ret = versionNodes.Single().InnerText;
-
-                return ret;
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message == missingMetaDataMessage || ex.Message == multipleMetaDataMessage
-                    || ex.Message == missingVersionMessage || ex.Message == multipleVersionMessage)
-                {
-                    throw;
-                }
-
-                throw new ArgumentException("NuSpec contents is not valid to be parsed.", ex);
-            }
-        }
-
-        /// <inheritdoc />
-        public string GetLatestVersion(string packageId)
-        {
-            if (string.IsNullOrWhiteSpace(packageId))
-            {
-                throw new ArgumentException("packageId cannot be null nor whitespace.");
-            }
-
-            // run nuget
-            var arguments = $"list {packageId} -prerelease -noninteractive";
-            consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list packages for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
-            var output = this.RunNugetCommandLine(arguments);
-            consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
-            var outputLines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-
-            /* parse output.  output should look like this (the first line may or may not appear):
-            Using credentials from config.UserName: user@domain.com
-            AcklenAvenue.Queueing.Serializers.JsonNet 1.0.1.39
-            CacheManager.Serialization.Json 0.8.0
-            com.egis.hue.sdk 1.0.0.2
-            Common.Serializer.NewtonsoftJson 0.2.0-pre
-            */
-
-            string version = null;
-            foreach (var outputLine in outputLines)
-            {
-                if (outputLine.StartsWith("Using credentials from config"))
-                {
-                    continue;
-                }
-
-                var tokens = outputLine.Split(' ');
-                if (tokens[0].Equals(packageId, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (version != null)
-                    {
-                        throw new InvalidOperationException($"Package {packageId} is contained within multiple galleries.");
-                    }
-
-                    version = tokens[1].Trim();
-                }
-            }
-
-            return version;
         }
 
         /// <inheritdoc />
@@ -408,6 +234,178 @@ namespace Naos.Packaging.NuGet
         }
 
         /// <inheritdoc />
+        public string GetLatestVersion(string packageId)
+        {
+            if (string.IsNullOrWhiteSpace(packageId))
+            {
+                throw new ArgumentException("packageId cannot be null nor whitespace.");
+            }
+
+            // run nuget
+            var arguments = $"list {packageId} -prerelease -noninteractive";
+            consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list packages for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
+            var output = this.RunNugetCommandLine(arguments);
+            consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
+            var outputLines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+
+            /* parse output.  output should look like this (the first line may or may not appear):
+            Using credentials from config.UserName: user@domain.com
+            AcklenAvenue.Queueing.Serializers.JsonNet 1.0.1.39
+            CacheManager.Serialization.Json 0.8.0
+            com.egis.hue.sdk 1.0.0.2
+            Common.Serializer.NewtonsoftJson 0.2.0-pre
+            */
+
+            string version = null;
+            foreach (var outputLine in outputLines)
+            {
+                if (outputLine.StartsWith("Using credentials from config"))
+                {
+                    continue;
+                }
+
+                var tokens = outputLine.Split(' ');
+                if (tokens[0].Equals(packageId, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (version != null)
+                    {
+                        throw new InvalidOperationException($"Package {packageId} is contained within multiple galleries.");
+                    }
+
+                    version = tokens[1].Trim();
+                }
+            }
+
+            return version;
+        }
+
+        /// <inheritdoc />
+        public IDictionary<string, string> GetMultipleFileContentsFromPackageAsStrings(
+            Package package,
+            string searchPattern,
+            Encoding encoding = null)
+        {
+            encoding = encoding ?? Encoding.UTF8;
+
+            var dictionaryBytes = this.GetMultipleFileContentsFromPackageAsBytes(package, searchPattern);
+            var dictionaryStrings = dictionaryBytes.ToDictionary(_ => _.Key, _ => encoding.GetString(_.Value));
+
+            return dictionaryStrings;
+        }
+
+        /// <inheritdoc />
+        public IDictionary<string, byte[]> GetMultipleFileContentsFromPackageAsBytes(
+            Package package,
+            string searchPattern)
+        {
+            if (string.Equals(package.PackageDescription.Id, PackageDescription.NullPackageId, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return new Dictionary<string, byte[]>();
+            }
+
+            // download package (decompressed)
+            var workingDirectory = Path.Combine(
+                this.defaultWorkingDirectory,
+                "PackageFileContentsSearch-" + DateTime.Now.ToString(DirectoryDateTimeToStringFormat));
+            var packageFilePath = Path.Combine(workingDirectory, "Package.zip");
+            Directory.CreateDirectory(workingDirectory);
+            File.WriteAllBytes(packageFilePath, package.PackageFileBytes);
+            ZipFile.ExtractToDirectory(packageFilePath, Directory.GetParent(packageFilePath).FullName);
+
+            // get list of files as fullpath strings
+            var files = Directory.GetFiles(workingDirectory, "*", SearchOption.AllDirectories);
+
+            // normalize slashes in searchPattern AND in file list
+            var normalizedSlashesSearchPattern = searchPattern.Replace(@"\", "/");
+            var normalizedSlashesFiles = files.Select(_ => _.Replace(@"\", "/"));
+            var filesToGetContentsFor =
+                normalizedSlashesFiles.Where(
+                    _ =>
+                    CultureInfo.CurrentCulture.CompareInfo.IndexOf(
+                        _,
+                        normalizedSlashesSearchPattern,
+                        CompareOptions.IgnoreCase) >= 0);
+
+            var ret = filesToGetContentsFor.ToDictionary(_ => _, File.ReadAllBytes);
+
+            // clean up temp files
+            Directory.Delete(workingDirectory, true);
+
+            return ret;
+        }
+
+        /// <inheritdoc />
+        public string GetVersionFromNuSpecFile(
+            string nuSpecFileContents)
+        {
+            if (string.IsNullOrEmpty(nuSpecFileContents))
+            {
+                return null;
+            }
+
+            var missingMetaDataMessage = "Could not find metadata in the provided NuSpec.";
+            var multipleMetaDataMessage = "Found multiple metadata nodes in the provided NuSpec.";
+            var missingVersionMessage = "Could not find the version in the provided NuSpec.";
+            var multipleVersionMessage = "Found multiple version nodes in the provided NuSpec.";
+
+            try
+            {
+                var xmlDoc = new XmlDocument();
+                var sanitizedNuSpecFileContents = nuSpecFileContents.Replace("\ufeff", string.Empty); // strip the BOM as it makes XML.Load bomb...;
+                xmlDoc.LoadXml(sanitizedNuSpecFileContents);
+
+                var xpath = "/*[local-name()='package']/*[local-name()='metadata']";
+                var nodes = xmlDoc.SelectNodes(xpath);
+
+                if (nodes == null || nodes.Count == 0)
+                {
+                    throw new ArgumentException(missingMetaDataMessage);
+                }
+
+                if (nodes.Count > 1)
+                {
+                    throw new ArgumentException(multipleMetaDataMessage);
+                }
+
+                // only one node now
+                var childNodes = nodes[0];
+
+                var versionNodes = new List<XmlNode>();
+                foreach (XmlNode childNode in childNodes)
+                {
+                    if (childNode.Name == "version")
+                    {
+                        versionNodes.Add(childNode);
+                    }
+                }
+
+                if (versionNodes.Count == 0)
+                {
+                    throw new ArgumentException(missingVersionMessage);
+                }
+
+                if (versionNodes.Count > 1)
+                {
+                    throw new ArgumentException(multipleVersionMessage);
+                }
+
+                var ret = versionNodes.Single().InnerText;
+
+                return ret;
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message == missingMetaDataMessage || ex.Message == multipleMetaDataMessage
+                    || ex.Message == missingVersionMessage || ex.Message == multipleVersionMessage)
+                {
+                    throw;
+                }
+
+                throw new ArgumentException("NuSpec contents is not valid to be parsed.", ex);
+            }
+        }
+
+        /// <inheritdoc />
         public void Dispose()
         {
             this.Dispose(true);
@@ -418,7 +416,8 @@ namespace Naos.Packaging.NuGet
         /// Disposes the class.
         /// </summary>
         /// <param name="disposing">Determines if managed resources should be disposed.</param>
-        protected virtual void Dispose(bool disposing)
+        protected virtual void Dispose(
+            bool disposing)
         {
             if (disposing)
             {
@@ -432,7 +431,8 @@ namespace Naos.Packaging.NuGet
             }
         }
 
-        private string RunNugetCommandLine(string arguments)
+        private string RunNugetCommandLine(
+            string arguments)
         {
             var process = new Process
             {
