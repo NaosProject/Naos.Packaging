@@ -26,6 +26,7 @@ namespace Naos.Packaging.NuGet
     /// NuGet specific implementation of <see cref="IGetPackages"/>.
     /// </summary>
     public class PackageRetriever : IGetPackages, IDisposable
+    public class PackageRetriever : IGetPackages, IRemovePackages, IDisposable
     {
         private const string DirectoryDateTimeToStringFormat = "yyyy-MM-dd--HH-mm-ss--ffff";
 
@@ -277,6 +278,44 @@ namespace Naos.Packaging.NuGet
             }
 
             return version;
+        }
+
+        /// <inheritdoc />
+        public void UnlistPackage(
+            PackageDescription packageDescription)
+        {
+            if (packageDescription == null)
+            {
+                throw new ArgumentNullException(nameof(packageDescription));
+            }
+
+            if (string.IsNullOrWhiteSpace(packageDescription.Version))
+            {
+                throw new ArgumentException($"{nameof(packageDescription)} {nameof(PackageDescription.Version)} is required");
+            }
+
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public void UnlistAllVersionsOfPackage(
+            string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public void DeletePackage(
+            PackageDescription packageDescription)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public void DeleteAllVersionsOfPackage(
+            string id)
+        {
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc />
