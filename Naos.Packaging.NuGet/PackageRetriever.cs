@@ -533,14 +533,15 @@ namespace Naos.Packaging.NuGet
         }
 
         private string RunNugetCommandLine(
-            string arguments)
+            string arguments,
+            bool appendConfigFileArgument = true)
         {
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = this.nugetExeFilePath,
-                    Arguments = $"{arguments} -configfile \"{this.nugetConfigFilePath}\"",
+                    Arguments = !appendConfigFileArgument ? arguments :  $"{arguments} -configfile \"{this.nugetConfigFilePath}\"",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -556,8 +557,8 @@ namespace Naos.Packaging.NuGet
                     throw new InvalidOperationException("nuget.exe could not be started.");
                 }
 
-                string output = process.StandardOutput.ReadToEnd();
-                string error = process.StandardError.ReadToEnd();
+                var output = process.StandardOutput.ReadToEnd();
+                var error = process.StandardError.ReadToEnd();
                 process.WaitForExit();
 
                 if (process.ExitCode != 0)
