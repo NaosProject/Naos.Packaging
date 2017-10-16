@@ -393,7 +393,7 @@ namespace Naos.Packaging.NuGet
 
         /// <inheritdoc />
         public void DeleteAllVersionsOfPackage(
-            string id,
+            string packageId,
             string packageRepositorySourceName,
             string apiKey)
         {

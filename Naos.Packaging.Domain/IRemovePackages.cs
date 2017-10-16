@@ -25,11 +25,11 @@ namespace Naos.Packaging.Domain
         /// <summary>
         /// Deletes all versions of a package.
         /// </summary>
-        /// <param name="id">The identifier of the package to delete for all versions.</param>
+        /// <param name="packageId">The identifier of the package to delete for all versions.</param>
         /// <param name="packageRepositorySourceName">The source name of the package repository to delete from.</param>
         /// <param name="apiKey">The API key to use.</param>
         void DeleteAllVersionsOfPackage(
-            string id,
+            string packageId,
             string packageRepositorySourceName,
             string apiKey);
     }
