@@ -256,7 +256,7 @@ namespace Naos.Packaging.NuGet
                 var packageVersion = packageDescription.Version;
                 if (string.IsNullOrWhiteSpace(packageVersion))
                 {
-                    packageVersion = this.GetLatestVersion(packageDescription.Id);
+                    packageVersion = this.GetLatestVersion(packageDescription.Id).Version;
                     if (packageVersion == null)
                     {
                         throw new ArgumentException(
@@ -279,9 +279,9 @@ namespace Naos.Packaging.NuGet
                                            <packages>
                                              <package id=""{packageDescription.Id}"" version=""{packageVersion}"" />
                                            </packages>";
-                    string packagesConfigXmlDirectory = Path.Combine(this.tempDirectory, Path.GetRandomFileName());
+                    var packagesConfigXmlDirectory = Path.Combine(this.tempDirectory, Path.GetRandomFileName());
                     Directory.CreateDirectory(packagesConfigXmlDirectory);
-                    string packagesConfigXmlFilePath = Path.Combine(packagesConfigXmlDirectory, "packages.config");
+                    var packagesConfigXmlFilePath = Path.Combine(packagesConfigXmlDirectory, "packages.config");
                     File.WriteAllText(packagesConfigXmlFilePath, packagesConfigXml, Encoding.UTF8);
                     toInstall = $"\"{packagesConfigXmlFilePath}\"";
                 }
@@ -306,7 +306,7 @@ namespace Naos.Packaging.NuGet
         }
 
         /// <inheritdoc />
-        public string GetLatestVersion(string packageId)
+        public PackageDescription GetLatestVersion(string packageId)
         {
             if (string.IsNullOrWhiteSpace(packageId))
             {
@@ -328,7 +328,7 @@ namespace Naos.Packaging.NuGet
             Common.Serializer.NewtonsoftJson 0.2.0-pre
             */
 
-            string version = null;
+            PackageDescription result = null;
             foreach (var outputLine in outputLines)
             {
                 if (outputLine.StartsWith("Using credentials from config"))
@@ -339,16 +339,20 @@ namespace Naos.Packaging.NuGet
                 var tokens = outputLine.Split(' ');
                 if (tokens[0].Equals(packageId, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (version != null)
+                    if (result != null)
                     {
                         throw new InvalidOperationException($"Package {packageId} is contained within multiple galleries.");
                     }
 
-                    version = tokens[1].Trim();
+                    result = new PackageDescription
+                    {
+                        Id = tokens[0],
+                        Version = tokens[1].Trim()
+                    };
                 }
             }
 
-            return version;
+            return result;
         }
 
         /// <inheritdoc />

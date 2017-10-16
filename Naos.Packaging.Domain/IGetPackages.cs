@@ -18,8 +18,11 @@ namespace Naos.Packaging.Domain
         /// Gets the latest version of a package id.
         /// </summary>
         /// <param name="packageId">Package id to get version of.</param>
-        /// <returns>Latest version of the package id specified.</returns>
-        string GetLatestVersion(string packageId);
+        /// <returns>
+        /// A description of the latest version of the package id specified.
+        /// </returns>
+        PackageDescription GetLatestVersion(
+            string packageId);
 
         /// <summary>
         /// Downloads the specified packages.
@@ -28,21 +31,26 @@ namespace Naos.Packaging.Domain
         /// <param name="workingDirectory">Directory to download and decompress package to.</param>
         /// <param name="includeDependencies">Include dependencies when downloading (default is FALSE).</param>
         /// <returns>Full paths to the files that were downloaded.</returns>
-        ICollection<string> DownloadPackages(ICollection<PackageDescription> packageDescriptions, string workingDirectory, bool includeDependencies = false);
+        ICollection<string> DownloadPackages(
+            ICollection<PackageDescription> packageDescriptions,
+            string workingDirectory,
+            bool includeDependencies = false);
 
         /// <summary>
         /// Gets package file for a package description.
         /// </summary>
         /// <param name="packageDescription">Package description to get file for.</param>
         /// <returns>Package (description and file).</returns>
-        Package GetPackage(PackageDescription packageDescription);
+        Package GetPackage(
+            PackageDescription packageDescription);
 
         /// <summary>
         /// Gets the bytes of the package file for a package description (as of time of execution).
         /// </summary>
         /// <param name="packageDescription">Package description to get file for.</param>
         /// <returns>Bytes of package file.</returns>
-        byte[] GetPackageFile(PackageDescription packageDescription);
+        byte[] GetPackageFile(
+            PackageDescription packageDescription);
 
         /// <summary>
         /// Gets the contents of a file (as a string) matching the search pattern for the package in question (will decompress and search through the contents of the package).
@@ -51,7 +59,10 @@ namespace Naos.Packaging.Domain
         /// <param name="searchPattern">Infix pattern to use for searching for files.</param>
         /// <param name="encoding">Optional encoding to use (UTF-8 [no BOM] is default).</param>
         /// <returns>Dictionary of file name and contents of the file found as a string.</returns>
-        IDictionary<string, string> GetMultipleFileContentsFromPackageAsStrings(Package package, string searchPattern, Encoding encoding = null);
+        IDictionary<string, string> GetMultipleFileContentsFromPackageAsStrings(
+            Package package,
+            string searchPattern,
+            Encoding encoding = null);
 
         /// <summary>
         /// Gets the contents of a file (as a string) matching the search pattern for the package in question (will decompress and search through the contents of the package).
@@ -59,13 +70,16 @@ namespace Naos.Packaging.Domain
         /// <param name="package">Package to find the file(s) in.</param>
         /// <param name="searchPattern">Infix pattern to use for searching for files.</param>
         /// <returns>Dictionary of file name and contents of the file found as a byte array.</returns>
-        IDictionary<string, byte[]> GetMultipleFileContentsFromPackageAsBytes(Package package, string searchPattern);
+        IDictionary<string, byte[]> GetMultipleFileContentsFromPackageAsBytes(
+            Package package,
+            string searchPattern);
 
         /// <summary>
         /// Gets the version of a package by reading it's NuSpec file.
         /// </summary>
         /// <param name="nuSpecFileContents">Contents of the NuSpec file to read from.</param>
         /// <returns>Version of the package as declared in the NuSpec file.</returns>
-        string GetVersionFromNuSpecFile(string nuSpecFileContents);
+        string GetVersionFromNuSpecFile(
+            string nuSpecFileContents);
     }
 }
