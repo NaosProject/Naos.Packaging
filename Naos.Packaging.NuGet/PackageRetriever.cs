@@ -306,15 +306,31 @@ namespace Naos.Packaging.NuGet
         }
 
         /// <inheritdoc />
-        public PackageDescription GetLatestVersion(string packageId)
+        public PackageDescription GetLatestVersion(
+            string packageId,
+            bool includePrerelease = true,
+            bool includeDelisted = false,
+            string packageRepositorySourceName = null)
         {
             if (string.IsNullOrWhiteSpace(packageId))
             {
                 throw new ArgumentException("packageId cannot be null nor whitespace.");
             }
 
-            // run nuget
-            var arguments = $"list {packageId} -prerelease";
+            var arguments = $"list {packageId}";
+            if (includePrerelease)
+            {
+                arguments = $"{arguments} -prerelease";
+            }
+
+            if (includeDelisted)
+            {
+                arguments = $"{arguments} -includedelisted";
+            }
+
+            var sourceArgument = this.BuildSourceUrlArgumentFromSourceName(packageRepositorySourceName);
+            arguments = $"{arguments} {sourceArgument}";
+
             consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list packages for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
             var output = this.RunNugetCommandLine(arguments);
             consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
@@ -618,6 +634,24 @@ namespace Naos.Packaging.NuGet
             }
 
             return nugetExeFilePath;
+        }
+
+        private string BuildSourceUrlArgumentFromSourceName(
+            string packageRepositorySourceName)
+        {
+            var result = string.Empty;
+            if (!string.IsNullOrWhiteSpace(packageRepositorySourceName))
+            {
+                var packageRepository = this.packageRepositoryConfigurations.SingleOrDefault(_ => _.SourceName.Equals(packageRepositorySourceName, StringComparison.OrdinalIgnoreCase));
+                if (packageRepository == null)
+                {
+                    throw new ArgumentException($"{nameof(packageRepositorySourceName)} is not a valid source in the nuget config");
+                }
+
+                result = $"-source \"{packageRepository.Source}\"";
+            }
+
+            return result;
         }
     }
 }
