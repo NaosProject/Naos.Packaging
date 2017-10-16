@@ -30,7 +30,7 @@ namespace Naos.Packaging.NuGet.Test
             };
 
             var defaultWorkingDirectory = @"D:\Temp\NewNuGet";
-            var pm = new PackageRetriever(defaultWorkingDirectory, repoConfig);
+            var pm = new PackageRetriever(defaultWorkingDirectory, new[] { PackageRepositoryConfiguration.NugetOrgV2, PackageRepositoryConfiguration.NugetOrgV3, repoConfig });
             var package = pm.GetPackage(new PackageDescription { Id = "ThisIsPackage" });
             Assert.NotNull(package.PackageFileBytes);
         }
@@ -39,7 +39,7 @@ namespace Naos.Packaging.NuGet.Test
         public void DownloadPublic()
         {
             var defaultWorkingDirectory = @"D:\Temp\NewNuGet";
-            var pm = new PackageRetriever(defaultWorkingDirectory);
+            var pm = new PackageRetriever(defaultWorkingDirectory, PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var package = pm.GetPackage(new PackageDescription { Id = "Newtonsoft.Json" });
             Assert.NotNull(package.PackageFileBytes);
         }
@@ -97,7 +97,7 @@ namespace Naos.Packaging.NuGet.Test
         [Fact]
         public static void GetVersionFromNuSpecFile_NullContents_ReturnsNull()
         {
-            var packageManager = new PackageRetriever(Path.GetTempPath(), null);
+            var packageManager = new PackageRetriever(Path.GetTempPath(), PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var version = packageManager.GetVersionFromNuSpecFile(null);
             Assert.Null(version);
         }
@@ -105,7 +105,7 @@ namespace Naos.Packaging.NuGet.Test
         [Fact]
         public static void GetVersionFromNuSpecFile_EmptyContents_ReturnsNull()
         {
-            var packageManager = new PackageRetriever(Path.GetTempPath(), null);
+            var packageManager = new PackageRetriever(Path.GetTempPath(), PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var version = packageManager.GetVersionFromNuSpecFile(string.Empty);
             Assert.Null(version);
         }
@@ -113,7 +113,7 @@ namespace Naos.Packaging.NuGet.Test
         [Fact]
         public static void GetVersionFromNuSpecFile_InvalidContents_Throws()
         {
-            var packageManager = new PackageRetriever(Path.GetTempPath(), null);
+            var packageManager = new PackageRetriever(Path.GetTempPath(), PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var ex = Assert.Throws<ArgumentException>(() => packageManager.GetVersionFromNuSpecFile("NOT XML..."));
             Assert.Equal("NuSpec contents is not valid to be parsed.", ex.Message);
         }
@@ -149,7 +149,7 @@ namespace Naos.Packaging.NuGet.Test
   </metadata>
 </package>";
 
-            var packageManager = new PackageRetriever(Path.GetTempPath(), null);
+            var packageManager = new PackageRetriever(Path.GetTempPath(), PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var ex = Assert.Throws<ArgumentException>(() => packageManager.GetVersionFromNuSpecFile(nuSpecFileContents));
             Assert.Equal("Found multiple metadata nodes in the provided NuSpec.", ex.Message);
         }
@@ -177,7 +177,7 @@ namespace Naos.Packaging.NuGet.Test
   </metadata>
 </package>";
 
-            var packageManager = new PackageRetriever(Path.GetTempPath(), null);
+            var packageManager = new PackageRetriever(Path.GetTempPath(), PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var version = packageManager.GetVersionFromNuSpecFile(nuSpecFileContents);
             version.Should().Be("1.0.165-addseparatejobtracki");
         }
@@ -189,7 +189,7 @@ namespace Naos.Packaging.NuGet.Test
 <package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
 </package>";
 
-            var packageManager = new PackageRetriever(Path.GetTempPath(), null);
+            var packageManager = new PackageRetriever(Path.GetTempPath(), PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var ex = Assert.Throws<ArgumentException>(() => packageManager.GetVersionFromNuSpecFile(nuSpecFileContents));
             Assert.Equal("Could not find metadata in the provided NuSpec.", ex.Message);
         }
@@ -214,7 +214,7 @@ namespace Naos.Packaging.NuGet.Test
   </metadata>
 </package>";
 
-            var packageManager = new PackageRetriever(Path.GetTempPath(), null);
+            var packageManager = new PackageRetriever(Path.GetTempPath(), PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var ex = Assert.Throws<ArgumentException>(() => packageManager.GetVersionFromNuSpecFile(nuSpecFileContents));
             Assert.Equal("Found multiple version nodes in the provided NuSpec.", ex.Message);
         }
@@ -237,7 +237,7 @@ namespace Naos.Packaging.NuGet.Test
   </metadata>
 </package>";
 
-            var packageManager = new PackageRetriever(Path.GetTempPath(), null);
+            var packageManager = new PackageRetriever(Path.GetTempPath(), PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var ex = Assert.Throws<ArgumentException>(() => packageManager.GetVersionFromNuSpecFile(nuSpecFileContents));
             Assert.Equal("Could not find the version in the provided NuSpec.", ex.Message);
         }
@@ -261,7 +261,7 @@ namespace Naos.Packaging.NuGet.Test
   </metadata>
 </package>";
 
-            var packageManager = new PackageRetriever(Path.GetTempPath(), null);
+            var packageManager = new PackageRetriever(Path.GetTempPath(), PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var version = packageManager.GetVersionFromNuSpecFile(nuSpecFileContents);
             Assert.Equal("1.0.299", version);
         }

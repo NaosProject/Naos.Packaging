@@ -25,7 +25,6 @@ namespace Naos.Packaging.NuGet
     /// <summary>
     /// NuGet specific implementation of <see cref="IGetPackages"/>.
     /// </summary>
-    public class PackageRetriever : IGetPackages, IDisposable
     public class PackageRetriever : IGetPackages, IRemovePackages, IDisposable
     {
         private const string DirectoryDateTimeToStringFormat = "yyyy-MM-dd--HH-mm-ss--ffff";
@@ -34,11 +33,11 @@ namespace Naos.Packaging.NuGet
 
         private readonly string defaultWorkingDirectory;
 
-        private readonly string nugetExeFilePath;
+        private readonly string tempDirectory;
 
         private readonly string nugetConfigFilePath;
 
-        private readonly string tempDirectory;
+        private readonly string nugetExeFilePath;
 
         private readonly Action<string> consoleOutputCallback;
 
@@ -46,83 +45,96 @@ namespace Naos.Packaging.NuGet
         /// Initializes a new instance of the <see cref="PackageRetriever"/> class.
         /// </summary>
         /// <param name="defaultWorkingDirectory">Working directory to download temporary files to.</param>
-        /// <param name="repoConfig">Optional.  Package repository configuration. If null then only the public gallery will be configured.</param>
+        /// <param name="repoConfigs">Package repository configurations.</param>
         /// <param name="nugetExeFilePath">Optional.  Path to nuget.exe. If null then an embedded copy of nuget.exe will be used.</param>
-        /// <param name="nugetConfigFilePath">
-        /// Optional.  Path a nuget config xml file.  If null then a config
-        /// file will be written/used.  This file will enable the public gallery
-        /// as well as the gallery specified in <paramref name="repoConfig"/>.
-        /// </param>
         /// <param name="consoleOutputCallback">Optional.  If specified, then console output will be written to this action.</param>
         public PackageRetriever(
             string defaultWorkingDirectory,
-            PackageRepositoryConfiguration repoConfig = null,
+            IReadOnlyCollection<PackageRepositoryConfiguration> repoConfigs,
             string nugetExeFilePath = null,
-            string nugetConfigFilePath = null,
             Action<string> consoleOutputCallback = null)
         {
-            // check parameters
-            if (!Directory.Exists(defaultWorkingDirectory))
-            {
-                throw new ArgumentException("The specified default working directory does not exist.");
-            }
-
-            if ((repoConfig != null) && (nugetConfigFilePath != null))
-            {
-                throw new ArgumentException("A repo config was specified along with a config XML file path.  If you would like to include a package repository, either include it in the config XML or don't specify a config XML.");
-            }
-
-            // setup temp directory
             this.defaultWorkingDirectory = defaultWorkingDirectory;
-            this.tempDirectory = Path.Combine(this.defaultWorkingDirectory, Path.GetRandomFileName());
-            Directory.CreateDirectory(this.tempDirectory);
 
-            // write nuget.exe to disk if needed
-            if (nugetExeFilePath == null)
+            this.tempDirectory = this.SetupTempWorkingDirectory(defaultWorkingDirectory);
+
+            if (repoConfigs == null)
             {
-                nugetExeFilePath = Path.Combine(this.tempDirectory, NugetExeFileName);
-                using (var nugetExeStream = AssemblyHelper.OpenEmbeddedResourceStream(NugetExeFileName))
-                {
-                    using (var fileStream = new FileStream(nugetExeFilePath, FileMode.Create, FileAccess.Write))
-                    {
-                        nugetExeStream.CopyTo(fileStream);
-                    }
-                }
+                throw new ArgumentNullException(nameof(repoConfigs));
             }
 
-            this.nugetExeFilePath = nugetExeFilePath;
-
-            // write NuGet.config to disk if needed
-            if (nugetConfigFilePath == null)
+            if (repoConfigs.Contains(null))
             {
-                nugetConfigFilePath = Path.Combine(this.tempDirectory, "NuGet.config");
-                string packageSource = string.Empty;
-                string packageSourceCredentials = string.Empty;
-                if (repoConfig != null)
+                throw new ArgumentException($"{nameof(repoConfigs)} contains null element");
+            }
+
+            if (!repoConfigs.Any())
+            {
+                throw new ArgumentException($"{nameof(repoConfigs)} is empty");
+            }
+
+            this.nugetExeFilePath = SetupNugetExe(nugetExeFilePath);
+
+            this.consoleOutputCallback = consoleOutputCallback;
+
+            var configFilePath = Path.Combine(this.tempDirectory, "NuGet.config");
+            var packageSource = string.Empty;
+            var packageSourceCredentials = string.Empty;
+
+            foreach (var repoConfig in repoConfigs)
+            {
+                packageSource = $@"{packageSource}{Environment.NewLine}<add key=""{repoConfig.SourceName}"" value=""{repoConfig.Source}"" />";
+                if (!string.IsNullOrWhiteSpace(repoConfig.Username) ||
+                    (!string.IsNullOrWhiteSpace(repoConfig.ClearTextPassword)))
                 {
-                    packageSource = $@"<add key=""{repoConfig.SourceName}"" value=""{repoConfig.Source}"" />";
-                    packageSourceCredentials = $@"<packageSourceCredentials>
+                    packageSourceCredentials = $@"{packageSourceCredentials}
+                                                  <packageSourceCredentials>
                                                     <{repoConfig.SourceName}>
                                                       <add key=""Username"" value=""{repoConfig.Username}"" />
                                                       <add key=""ClearTextPassword"" value=""{repoConfig.ClearTextPassword}"" />
                                                     </{repoConfig.SourceName}>
                                                   </packageSourceCredentials>";
                 }
+            }
 
-                var configXml = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var configXml = $@"<?xml version=""1.0"" encoding=""utf-8""?>
                                    <configuration>
                                      <packageSources>
                                        {packageSource}
-                                       <add key=""nugetv2"" value=""https://www.nuget.org/api/v2/"" />
-                                       <add key=""nugetv3"" value=""https://api.nuget.org/v3/index.json"" />
                                      </packageSources>
                                      {packageSourceCredentials}
                                    </configuration>";
 
-                File.WriteAllText(nugetConfigFilePath, configXml, Encoding.UTF8);
+            File.WriteAllText(configFilePath, configXml, Encoding.UTF8);
+            this.nugetConfigFilePath = configFilePath;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PackageRetriever"/> class.
+        /// </summary>
+        /// <param name="defaultWorkingDirectory">Working directory to download temporary files to.</param>
+        /// <param name="nugetConfigFilePath">Path a nuget config xml file.</param>
+        /// <param name="nugetExeFilePath">Optional.  Path to nuget.exe. If null then an embedded copy of nuget.exe will be used.</param>
+        /// <param name="consoleOutputCallback">Optional.  If specified, then console output will be written to this action.</param>
+        public PackageRetriever(
+            string defaultWorkingDirectory,
+            string nugetConfigFilePath,
+            string nugetExeFilePath = null,
+            Action<string> consoleOutputCallback = null)
+        {
+            this.defaultWorkingDirectory = defaultWorkingDirectory;
+
+            this.tempDirectory = this.SetupTempWorkingDirectory(defaultWorkingDirectory);
+
+            if (!File.Exists(nugetConfigFilePath))
+            {
+                throw new ArgumentException($"{nameof(nugetConfigFilePath)} does not exist on disk.");
             }
 
             this.nugetConfigFilePath = nugetConfigFilePath;
+
+            this.nugetExeFilePath = SetupNugetExe(nugetExeFilePath);
+
             this.consoleOutputCallback = consoleOutputCallback;
         }
 
@@ -505,6 +517,45 @@ namespace Naos.Packaging.NuGet
 
                 return output;
             }
+        }
+
+        private string SetupTempWorkingDirectory(
+            string defaultWorkingDirectory)
+        {
+            if (!Directory.Exists(defaultWorkingDirectory))
+            {
+                throw new ArgumentException($"{nameof(defaultWorkingDirectory)} does not exist on disk.");
+            }
+
+            var result = Path.Combine(this.defaultWorkingDirectory, Path.GetRandomFileName());
+            Directory.CreateDirectory(result);
+            return result;
+        }
+
+        private string SetupNugetExe(
+            string nugetExeFilePath)
+        {
+            if (nugetExeFilePath == null)
+            {
+                // write embedded nuget.exe to disk
+                nugetExeFilePath = Path.Combine(this.tempDirectory, NugetExeFileName);
+                using (var nugetExeStream = AssemblyHelper.OpenEmbeddedResourceStream(NugetExeFileName))
+                {
+                    using (var fileStream = new FileStream(nugetExeFilePath, FileMode.Create, FileAccess.Write))
+                    {
+                        nugetExeStream.CopyTo(fileStream);
+                    }
+                }
+            }
+            else
+            {
+                if (!File.Exists(nugetExeFilePath))
+                {
+                    throw new ArgumentException($"{nameof(nugetExeFilePath)} does not exist on disk.");
+                }
+            }
+
+            return nugetExeFilePath;
         }
     }
 }
