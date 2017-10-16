@@ -61,6 +61,6 @@ namespace Naos.Packaging.Domain
         /// <summary>
         /// Gets or sets the version of the protocol for this repository.
         /// </summary>
-        public int ProtocolVersion { get; set; }
+        public int? ProtocolVersion { get; set; }
     }
 }
