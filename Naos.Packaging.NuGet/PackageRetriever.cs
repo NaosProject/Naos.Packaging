@@ -355,17 +355,17 @@ namespace Naos.Packaging.NuGet
 
             foreach (var packageDescription in packageDescriptions)
             {
-                var latestVersion = this.GetLatestVersion(packageDescription.Id);
-                if (latestVersion == null)
+                var packageVersion = packageDescription.Version;
+                if (string.IsNullOrWhiteSpace(packageVersion))
                 {
-                    throw new ArgumentException(
-                        "Could not find a version for the package (package ID may be incorrect or containing source may be offline); ID: "
-                        + packageDescription.Id);
+                    packageVersion = this.GetLatestVersion(packageDescription.Id);
+                    if (packageVersion == null)
+                    {
+                        throw new ArgumentException(
+                            "Could not find a version for the package (package ID may be incorrect or containing source may be offline); ID: "
+                            + packageDescription.Id);
+                    }
                 }
-
-                var packageVersion = !string.IsNullOrEmpty(packageDescription.Version)
-                                  ? packageDescription.Version
-                                  : latestVersion;
 
                 string toInstall;
                 if (includeDependencies)
