@@ -41,6 +41,8 @@ namespace Naos.Packaging.NuGet
 
         private readonly Action<string> consoleOutputCallback;
 
+        private readonly IReadOnlyCollection<PackageRepositoryConfiguration> packageRepositoryConfigurations;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PackageRetriever"/> class.
         /// </summary>
@@ -107,6 +109,7 @@ namespace Naos.Packaging.NuGet
 
             File.WriteAllText(configFilePath, configXml, Encoding.UTF8);
             this.nugetConfigFilePath = configFilePath;
+            this.packageRepositoryConfigurations = repoConfigs;
         }
 
         /// <summary>
@@ -136,6 +139,62 @@ namespace Naos.Packaging.NuGet
             this.nugetExeFilePath = SetupNugetExe(nugetExeFilePath);
 
             this.consoleOutputCallback = consoleOutputCallback;
+
+            var repoConfigs = new List<PackageRepositoryConfiguration>();
+            try
+            {
+                var nugetConfigFileContents = File.ReadAllText(this.nugetConfigFilePath);
+
+                var xmlDoc = new XmlDocument();
+                xmlDoc.LoadXml(nugetConfigFileContents);
+
+                var xpath = "/*[local-name()='configuration']/*[local-name()='packageSources']/*[local-name()='add']";
+                var nodes = xmlDoc.SelectNodes(xpath);
+
+                if (nodes == null || nodes.Count == 0)
+                {
+                    throw new ArgumentException($"{nameof(nugetConfigFilePath)} has no packageSources");
+                }
+
+                foreach (XmlNode node in nodes)
+                {
+                    if (node == null)
+                    {
+                        throw new ArgumentException($"Could not parse {nameof(nugetConfigFilePath)} - found null node");
+                    }
+
+                    var sourceName = node.Attributes["key"]?.InnerText;
+                    var source = node.Attributes["value"]?.InnerText;
+                    var protocolVersionString = node.Attributes["protocolVersion"]?.InnerText;
+                    int? protocolVersion = null;
+                    if (!string.IsNullOrWhiteSpace(protocolVersionString))
+                    {
+                        try
+                        {
+                            protocolVersion = int.Parse(protocolVersionString);
+                        }
+                        catch (Exception)
+                        {
+                            throw new ArgumentException($"In {nameof(nugetConfigFilePath)} source '{sourceName}:{source}' has an invalid protocolVersion");
+                        }
+                    }
+
+                    var repoConfig = new PackageRepositoryConfiguration()
+                    {
+                        Source = source,
+                        SourceName = sourceName,
+                        ProtocolVersion = protocolVersion,
+                    };
+
+                    repoConfigs.Add(repoConfig);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException($"Could not parse {nameof(nugetConfigFilePath)}", ex);
+            }
+
+            this.packageRepositoryConfigurations = repoConfigs;
         }
 
         /// <inheritdoc />
