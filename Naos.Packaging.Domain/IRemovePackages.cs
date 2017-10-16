@@ -12,27 +12,25 @@ namespace Naos.Packaging.Domain
     public interface IRemovePackages
     {
         /// <summary>
-        /// Unlists a package.
-        /// </summary>
-        /// <param name="packageDescription">Description of package to unlist.</param>
-        void UnlistPackage(PackageDescription packageDescription);
-
-        /// <summary>
-        /// Unlists all versions of a package.
-        /// </summary>
-        /// <param name="id">The identifier of the package to unlist for all versions.</param>
-        void UnlistAllVersionsOfPackage(string id);
-
-        /// <summary>
         /// Deletes a package.
         /// </summary>
         /// <param name="packageDescription">Description of package to delete.</param>
-        void DeletePackage(PackageDescription packageDescription);
+        /// <param name="packageRepositorySourceName">The source name of the package repository to delete from.</param>
+        /// <param name="apiKey">The API key to use.</param>
+        void DeletePackage(
+            PackageDescription packageDescription,
+            string packageRepositorySourceName,
+            string apiKey);
 
         /// <summary>
         /// Deletes all versions of a package.
         /// </summary>
         /// <param name="id">The identifier of the package to delete for all versions.</param>
-        void DeleteAllVersionsOfPackage(string id);
+        /// <param name="packageRepositorySourceName">The source name of the package repository to delete from.</param>
+        /// <param name="apiKey">The API key to use.</param>
+        void DeleteAllVersionsOfPackage(
+            string id,
+            string packageRepositorySourceName,
+            string apiKey);
     }
 }

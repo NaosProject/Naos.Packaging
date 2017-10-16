@@ -352,8 +352,10 @@ namespace Naos.Packaging.NuGet
         }
 
         /// <inheritdoc />
-        public void UnlistPackage(
-            PackageDescription packageDescription)
+        public void DeletePackage(
+            PackageDescription packageDescription,
+            string packageRepositorySourceName,
+            string apiKey)
         {
             if (packageDescription == null)
             {
@@ -365,26 +367,15 @@ namespace Naos.Packaging.NuGet
                 throw new ArgumentException($"{nameof(packageDescription)} {nameof(PackageDescription.Version)} is required");
             }
 
-            throw new NotImplementedException();
-        }
 
-        /// <inheritdoc />
-        public void UnlistAllVersionsOfPackage(
-            string id)
-        {
-            throw new NotImplementedException();
-        }
 
-        /// <inheritdoc />
-        public void DeletePackage(
-            PackageDescription packageDescription)
-        {
-            throw new NotImplementedException();
         }
 
         /// <inheritdoc />
         public void DeleteAllVersionsOfPackage(
-            string id)
+            string id,
+            string packageRepositorySourceName,
+            string apiKey)
         {
             throw new NotImplementedException();
         }
