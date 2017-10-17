@@ -415,13 +415,36 @@ namespace Naos.Packaging.NuGet
                 throw new ArgumentNullException(nameof(packageDescription));
             }
 
+            if (string.IsNullOrWhiteSpace(packageDescription.Id))
+            {
+                throw new ArgumentException($"{nameof(packageDescription)} {nameof(PackageDescription.Id)} is required");
+            }
+
             if (string.IsNullOrWhiteSpace(packageDescription.Version))
             {
                 throw new ArgumentException($"{nameof(packageDescription)} {nameof(PackageDescription.Version)} is required");
             }
 
+            if (string.IsNullOrWhiteSpace(packageRepositorySourceName))
+            {
+                throw new ArgumentException($"{nameof(packageRepositorySourceName)} is required");
+            }
 
+            var sourceArgument = this.BuildSourceUrlArgumentFromSourceName(packageRepositorySourceName);
+            var arguments = $"delete {packageDescription.Id} {packageDescription.Version} {sourceArgument}";
+            if (!string.IsNullOrWhiteSpace(apiKey))
+            {
+                arguments = $"{arguments} -ApiKey {apiKey}";
+            }
 
+            consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to delete package id '{packageDescription.Id}' version '{packageDescription.Version}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
+
+            // tested on the Nuget.org public gallery:
+            // if the version of the package has been unlisted, then no error occurs
+            // if the version of the package has never existed, then we get a 404 error
+            // if the package name has never existed, then we get a 404 error
+            var output = this.RunNugetCommandLine(arguments, appendConfigFileArgument: false);
+            consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
         }
 
         /// <inheritdoc />
@@ -430,7 +453,11 @@ namespace Naos.Packaging.NuGet
             string packageRepositorySourceName,
             string apiKey)
         {
-            throw new NotImplementedException();
+            var packageDescriptions = this.GetAllVersions(packageId, includePrerelease: true, includeDelisted: true, packageRepositorySourceName: packageRepositorySourceName);
+            foreach (var packageDescription in packageDescriptions)
+            {
+                this.DeletePackage(packageDescription, packageRepositorySourceName, apiKey);
+            }
         }
 
         /// <inheritdoc />
