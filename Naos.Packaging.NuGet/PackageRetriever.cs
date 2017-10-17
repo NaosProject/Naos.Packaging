@@ -18,7 +18,7 @@ namespace Naos.Packaging.NuGet
 
     using Naos.Packaging.Domain;
 
-    using OBeautifulCode.Reflection;
+    using OBeautifulCode.Reflection.Recipes;
 
     using Spritely.Redo;
 

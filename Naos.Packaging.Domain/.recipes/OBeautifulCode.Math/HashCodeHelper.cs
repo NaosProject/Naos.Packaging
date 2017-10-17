@@ -7,7 +7,7 @@
 // </auto-generated>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace OBeautifulCode.Math
+namespace OBeautifulCode.Math.Recipes
 {
     using System.Collections.Generic;
 

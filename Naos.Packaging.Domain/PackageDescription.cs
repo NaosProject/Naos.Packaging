@@ -8,7 +8,7 @@ namespace Naos.Packaging.Domain
 {
     using System;
 
-    using OBeautifulCode.Math;
+    using OBeautifulCode.Math.Recipes;
 
     /// <summary>
     /// Model object of a packaged piece of software.

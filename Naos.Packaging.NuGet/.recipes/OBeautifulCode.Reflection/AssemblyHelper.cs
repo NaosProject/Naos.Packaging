@@ -7,7 +7,7 @@
 // </auto-generated>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace OBeautifulCode.Reflection
+namespace OBeautifulCode.Reflection.Recipes
 {
     using System;
     using System.Diagnostics;
@@ -15,6 +15,8 @@ namespace OBeautifulCode.Reflection
     using System.IO.Compression;
     using System.Reflection;
     using System.Runtime.CompilerServices;
+
+    using Spritely.Recipes;
 
     /// <summary>
     /// Provides useful methods for extracting information from and
@@ -32,6 +34,20 @@ namespace OBeautifulCode.Reflection
 #endif
     static class AssemblyHelper
     {
+        /// <summary>
+        /// Gets the <see cref="Assembly.CodeBase" /> as a real file path instead of a <see cref="Uri" /> so it can be used with common <see cref="System.IO" /> operations.
+        /// </summary>
+        /// <param name="assembly">Assembly to extend functionality of.</param>
+        /// <returns>CodeBase as real path.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings", Justification = "Correct return type.")]
+        public static string GetCodeBaseAsPathInsteadOfUri(this Assembly assembly)
+        {
+            new { assembly }.Must().NotBeNull().OrThrowFirstFailure();
+
+            var nonUriCodeBase = assembly.CodeBase.Replace(@"file:///", string.Empty).Replace('/', '\\');
+            return nonUriCodeBase;
+        }
+
         /// <summary>
         /// Retrieves an embedded resource's stream.
         /// </summary>

@@ -7,7 +7,7 @@
 // </auto-generated>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace OBeautifulCode.Reflection
+namespace OBeautifulCode.Reflection.Recipes
 {
     /// <summary>
     /// Determines the compression algorithm and/or archive file format used to compress a resource.
@@ -31,6 +31,7 @@ namespace OBeautifulCode.Reflection
         /// The resource is compressed using the gzip file format,
         /// using the DEFLATE algorithm.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Gzip", Justification = "Spelling/name is correct.")]
         Gzip
     }
 }
