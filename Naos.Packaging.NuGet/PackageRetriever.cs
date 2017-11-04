@@ -256,7 +256,7 @@ namespace Naos.Packaging.NuGet
                 var packageVersion = packageDescription.Version;
                 if (string.IsNullOrWhiteSpace(packageVersion))
                 {
-                    packageVersion = this.GetLatestVersion(packageDescription.Id).Version;
+                    packageVersion = this.GetLatestVersion(packageDescription.Id)?.Version;
                     if (packageVersion == null)
                     {
                         throw new ArgumentException(
