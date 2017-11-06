@@ -21,6 +21,7 @@ namespace Naos.Packaging.Domain
         /// <param name="includePrerelease">Optional.  Include pre-release packages?  Default is true.</param>
         /// <param name="includeDelisted">Optional.  Include delisted packages?  Default is false.</param>
         /// <param name="packageRepositorySourceName">Optional.  The source name of the package repository to query.  Default is null - all configured reposistories will be queried.</param>
+        /// <param name="conflictingLatestVersionStrategy">Optional. Determines what to do when the configured package repositories report different versions as the latest version of a package.   Default is to use the highest number found across package repositories.</param>
         /// <returns>
         /// A description of the latest version of the package id specified.
         /// </returns>
@@ -28,7 +29,8 @@ namespace Naos.Packaging.Domain
             string packageId,
             bool includePrerelease = true,
             bool includeDelisted = false,
-            string packageRepositorySourceName = null);
+            string packageRepositorySourceName = null,
+            ConflictingLatestVersionStrategy conflictingLatestVersionStrategy = ConflictingLatestVersionStrategy.UseHighestVersion);
 
         /// <summary>
         /// Gets all versions of the package id.
@@ -51,12 +53,20 @@ namespace Naos.Packaging.Domain
         /// </summary>
         /// <param name="packageDescriptions">Description of packages to download.</param>
         /// <param name="workingDirectory">Directory to download and decompress package to.</param>
-        /// <param name="includeDependencies">Include dependencies when downloading (default is FALSE).</param>
+        /// <param name="includeDependencies">Optional.  Include dependencies when downloading.  Default is false.</param>
+        /// <param name="includePrerelease">Optional.  Include pre-release packages?  Default is true.</param>
+        /// <param name="includeDelisted">Optional.  Include delisted packages?  Default is false.</param>
+        /// <param name="packageRepositorySourceName">Optional.  The source name of the package repository to query.  Default is null - all configured reposistories will be queried.</param>
+        /// <param name="conflictingLatestVersionStrategy">Optional. Determines what to do when the configured package repositories report different versions as the latest version of a package.   Default is to use the highest number found across package repositories.</param>
         /// <returns>Full paths to the files that were downloaded.</returns>
         ICollection<string> DownloadPackages(
             ICollection<PackageDescription> packageDescriptions,
             string workingDirectory,
-            bool includeDependencies = false);
+            bool includeDependencies = false,
+            bool includePrerelease = true,
+            bool includeDelisted = false,
+            string packageRepositorySourceName = null,
+            ConflictingLatestVersionStrategy conflictingLatestVersionStrategy = ConflictingLatestVersionStrategy.UseHighestVersion);
 
         /// <summary>
         /// Gets package file for a package description.

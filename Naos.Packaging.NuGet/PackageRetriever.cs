@@ -242,7 +242,11 @@ namespace Naos.Packaging.NuGet
         public ICollection<string> DownloadPackages(
             ICollection<PackageDescription> packageDescriptions,
             string workingDirectory,
-            bool includeDependencies = false)
+            bool includeDependencies = false,
+            bool includePrerelease = true,
+            bool includeDelisted = false,
+            string packageRepositorySourceName = null,
+            ConflictingLatestVersionStrategy conflictingLatestVersionStrategy = ConflictingLatestVersionStrategy.UseHighestVersion)
         {
             if (!Directory.Exists(workingDirectory))
             {
@@ -256,7 +260,7 @@ namespace Naos.Packaging.NuGet
                 var packageVersion = packageDescription.Version;
                 if (string.IsNullOrWhiteSpace(packageVersion))
                 {
-                    packageVersion = this.GetLatestVersion(packageDescription.Id)?.Version;
+                    packageVersion = this.GetLatestVersion(packageDescription.Id, includePrerelease, includeDelisted, packageRepositorySourceName, conflictingLatestVersionStrategy)?.Version;
                     if (packageVersion == null)
                     {
                         throw new ArgumentException(
@@ -310,7 +314,8 @@ namespace Naos.Packaging.NuGet
             string packageId,
             bool includePrerelease = true,
             bool includeDelisted = false,
-            string packageRepositorySourceName = null)
+            string packageRepositorySourceName = null,
+            ConflictingLatestVersionStrategy conflictingLatestVersionStrategy = ConflictingLatestVersionStrategy.UseHighestVersion)
         {
             if (string.IsNullOrWhiteSpace(packageId))
             {
@@ -353,18 +358,44 @@ namespace Naos.Packaging.NuGet
                 }
 
                 var tokens = outputLine.Split(' ');
+                var id = tokens[0];
+
                 if (tokens[0].Equals(packageId, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (result != null)
-                    {
-                        throw new InvalidOperationException($"Package {packageId} is contained within multiple galleries.");
-                    }
+                    var version = tokens[1].Trim();
 
-                    result = new PackageDescription
+                    if (result == null)
                     {
-                        Id = tokens[0],
-                        Version = tokens[1].Trim()
-                    };
+                        result = new PackageDescription { Id = id, Version = version };
+                    }
+                    else
+                    {
+                        if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.ThrowException)
+                        {
+                            throw new InvalidOperationException(
+                                $"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {result.Version} and {version}");
+                        }
+                        else if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.UseHighestVersion)
+                        {
+                            var version1 = new Version(result.Version.Split(new[] { "-" }, StringSplitOptions.RemoveEmptyEntries).First());
+                            var version2 = new Version(version.Split(new[] { "-" }, StringSplitOptions.RemoveEmptyEntries).First());
+
+                            if (version1 == version2)
+                            {
+                                throw new NotSupportedException(
+                                    $"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {result.Version} and {version}.  These two versions have the same Major.Minor.Patch version (e.g. 1.2.3).  Comparing [-Suffix] (e.g. 1.2.3-beta1, 1.2.3-beta2) is not supported.");
+                            }
+                            else if (version2 > version1)
+                            {
+                                result = new PackageDescription { Id = id, Version = version };
+                            }
+                        }
+                        else
+                        {
+                            throw new NotSupportedException(
+                                $"This {nameof(ConflictingLatestVersionStrategy)} is not supported: {conflictingLatestVersionStrategy}");
+                        }
+                    }
                 }
             }
 

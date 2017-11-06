@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include=".recipes\OBeautifulCode.Math\HashCodeHelper.cs" />
+    <Compile Include="ConflictingLatestVersionStrategy.cs" />
     <Compile Include="IGetPackages.cs" />
     <Compile Include="IRemovePackages.cs" />
     <Compile Include="Package.cs" />
