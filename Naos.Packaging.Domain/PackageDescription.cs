@@ -86,6 +86,6 @@ namespace Naos.Packaging.Domain
         public override bool Equals(object obj) => this == (obj as PackageDescription);
 
         /// <inheritdoc />
-        public override int GetHashCode() => HashCodeHelper.Initialize().Hash(this.Id).Hash(this.Version).Value;
+        public override int GetHashCode() => HashCodeHelper.Initialize().Hash(this.Id.ToUpperInvariant()).Hash(this.Version).Value;
     }
 }

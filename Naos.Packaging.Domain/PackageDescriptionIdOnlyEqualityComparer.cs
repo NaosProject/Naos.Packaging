@@ -52,7 +52,7 @@ namespace Naos.Packaging.Domain
         public int GetHashCode(PackageDescription obj)
         {
             var id = obj.Id;
-            var hashCode = new Tuple<string>(id).GetHashCode();
+            var hashCode = new Tuple<string>(id.ToUpperInvariant()).GetHashCode();
             return hashCode;
         }
     }
