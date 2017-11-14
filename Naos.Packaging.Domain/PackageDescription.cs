@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PackageDescription.cs" company="Naos">
-//   Copyright 2015 Naos
+//    Copyright (c) Naos 2017. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -9,6 +9,8 @@ namespace Naos.Packaging.Domain
     using System;
 
     using OBeautifulCode.Math.Recipes;
+
+    using static System.FormattableString;
 
     /// <summary>
     /// Model object of a packaged piece of software.
@@ -34,12 +36,10 @@ namespace Naos.Packaging.Domain
         /// Gets the package description as a string in form: [ID].[Version].
         /// </summary>
         /// <returns>String version of package description in form: [ID].[Version].</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Want a method.")]
         public string GetIdDotVersionString()
         {
-            var ret = string.Format(
-                "{0}.{1}",
-                this.Id,
-                string.IsNullOrEmpty(this.Version) ? "[UnspecifiedVersion]" : this.Version);
+            var ret = Invariant($"{this.Id}.{(string.IsNullOrEmpty(this.Version) ? "[UnspecifiedVersion]" : this.Version)}");
             return ret;
         }
 
@@ -50,9 +50,12 @@ namespace Naos.Packaging.Domain
             return result;
         }
 
-        #region Equality
-
-        /// <inheritdoc />
+        /// <summary>
+        /// Equality operator.
+        /// </summary>
+        /// <param name="first">First parameter.</param>
+        /// <param name="second">Second parameter.</param>
+        /// <returns>A value indicating whether or not the two items are equal.</returns>
         public static bool operator ==(PackageDescription first, PackageDescription second)
         {
             if (ReferenceEquals(first, second))
@@ -65,10 +68,15 @@ namespace Naos.Packaging.Domain
                 return false;
             }
 
-            return (first.Id == second.Id) && (first.Version== second.Version);
+            return string.Equals(first.Id, second.Id, StringComparison.OrdinalIgnoreCase) && string.Equals(first.Version, second.Version, StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Inequality operator.
+        /// </summary>
+        /// <param name="first">First parameter.</param>
+        /// <param name="second">Second parameter.</param>
+        /// <returns>A value indicating whether or not the two items are inequal.</returns>
         public static bool operator !=(PackageDescription first, PackageDescription second) => !(first == second);
 
         /// <inheritdoc />
@@ -79,7 +87,5 @@ namespace Naos.Packaging.Domain
 
         /// <inheritdoc />
         public override int GetHashCode() => HashCodeHelper.Initialize().Hash(this.Id).Hash(this.Version).Value;
-
-        #endregion
     }
 }

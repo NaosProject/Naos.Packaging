@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PackageDescriptionIdOnlyEqualityComparer.cs" company="Naos">
-//   Copyright 2015 Naos
+//    Copyright (c) Naos 2017. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -33,7 +33,7 @@ namespace Naos.Packaging.Domain
             var firstSetDistinctOrderedIds = firstSet.Select(_ => _.Id).ToList().Distinct().OrderBy(_ => _);
             var secondSetDistinctOrderedIds = secondSet.Select(_ => _.Id).ToList().Distinct().OrderBy(_ => _);
 
-            var ret = firstSetDistinctOrderedIds.SequenceEqual(secondSetDistinctOrderedIds);
+            var ret = firstSetDistinctOrderedIds.SequenceEqual(secondSetDistinctOrderedIds, StringComparer.CurrentCultureIgnoreCase);
             return ret;
         }
 
@@ -45,14 +45,13 @@ namespace Naos.Packaging.Domain
                 return false;
             }
 
-            return x.Id == y.Id;
+            return x.Id.Equals(y.Id, StringComparison.CurrentCultureIgnoreCase);
         }
 
         /// <inheritdoc />
         public int GetHashCode(PackageDescription obj)
         {
-            var id = obj == null ? null : obj.Id;
-
+            var id = obj.Id;
             var hashCode = new Tuple<string>(id).GetHashCode();
             return hashCode;
         }

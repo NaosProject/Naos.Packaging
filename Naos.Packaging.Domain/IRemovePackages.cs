@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IRemovePackages.cs" company="Naos">
-//   Copyright 2015 Naos
+//    Copyright (c) Naos 2017. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -17,6 +17,7 @@ namespace Naos.Packaging.Domain
         /// <param name="packageDescription">Description of package to delete.</param>
         /// <param name="packageRepositorySourceName">The source name of the package repository to delete from.</param>
         /// <param name="apiKey">The API key to use.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "api", Justification = "Spelling/name is correct.")]
         void DeletePackage(
             PackageDescription packageDescription,
             string packageRepositorySourceName,
@@ -28,6 +29,7 @@ namespace Naos.Packaging.Domain
         /// <param name="packageId">The identifier of the package to delete for all versions.</param>
         /// <param name="packageRepositorySourceName">The source name of the package repository to delete from.</param>
         /// <param name="apiKey">The API key to use.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "api", Justification = "Spelling/name is correct.")]
         void DeleteAllVersionsOfPackage(
             string packageId,
             string packageRepositorySourceName,

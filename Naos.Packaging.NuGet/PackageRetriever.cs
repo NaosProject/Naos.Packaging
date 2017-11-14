@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PackageRetriever.cs" company="Naos">
-//   Copyright 2015 Naos
+//    Copyright (c) Naos 2017. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -21,6 +21,8 @@ namespace Naos.Packaging.NuGet
     using OBeautifulCode.Reflection.Recipes;
 
     using Spritely.Redo;
+
+    using static System.FormattableString;
 
     /// <summary>
     /// NuGet specific implementation of <see cref="IGetPackages"/>.
@@ -48,17 +50,19 @@ namespace Naos.Packaging.NuGet
         /// </summary>
         /// <param name="defaultWorkingDirectory">Working directory to download temporary files to.</param>
         /// <param name="repoConfigs">Package repository configurations.</param>
-        /// <param name="nugetExeFilePath">Optional.  Path to nuget.exe. If null then an embedded copy of nuget.exe will be used.</param>
+        /// <param name="nugetExeFilePathOverride">Optional.  Path to nuget.exe. If null then an embedded copy of nuget.exe will be used.</param>
         /// <param name="consoleOutputCallback">Optional.  If specified, then console output will be written to this action.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "nuget", Justification = "Spelling/name is correct.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Configs", Justification = "Spelling/name is correct.")]
         public PackageRetriever(
             string defaultWorkingDirectory,
             IReadOnlyCollection<PackageRepositoryConfiguration> repoConfigs,
-            string nugetExeFilePath = null,
+            string nugetExeFilePathOverride = null,
             Action<string> consoleOutputCallback = null)
         {
             this.defaultWorkingDirectory = defaultWorkingDirectory;
 
-            this.tempDirectory = this.SetupTempWorkingDirectory(defaultWorkingDirectory);
+            this.tempDirectory = SetupTempWorkingDirectory(defaultWorkingDirectory);
 
             if (repoConfigs == null)
             {
@@ -67,15 +71,15 @@ namespace Naos.Packaging.NuGet
 
             if (repoConfigs.Contains(null))
             {
-                throw new ArgumentException($"{nameof(repoConfigs)} contains null element");
+                throw new ArgumentException(Invariant($"{nameof(repoConfigs)} contains null element"));
             }
 
             if (!repoConfigs.Any())
             {
-                throw new ArgumentException($"{nameof(repoConfigs)} is empty");
+                throw new ArgumentException(Invariant($"{nameof(repoConfigs)} is empty"));
             }
 
-            this.nugetExeFilePath = SetupNugetExe(nugetExeFilePath);
+            this.nugetExeFilePath = this.SetupNugetExe(nugetExeFilePathOverride);
 
             this.consoleOutputCallback = consoleOutputCallback;
 
@@ -85,27 +89,27 @@ namespace Naos.Packaging.NuGet
 
             foreach (var repoConfig in repoConfigs)
             {
-                packageSource = $@"{packageSource}{Environment.NewLine}<add key=""{repoConfig.SourceName}"" value=""{repoConfig.Source}"" />";
-                if (!string.IsNullOrWhiteSpace(repoConfig.Username) ||
+                packageSource = Invariant($@"{packageSource}{Environment.NewLine}<add key=""{repoConfig.SourceName}"" value=""{repoConfig.Source}"" />");
+                if (!string.IsNullOrWhiteSpace(repoConfig.UserName) ||
                     (!string.IsNullOrWhiteSpace(repoConfig.ClearTextPassword)))
                 {
-                    packageSourceCredentials = $@"{packageSourceCredentials}
+                    packageSourceCredentials = Invariant($@"{packageSourceCredentials}
                                                   <packageSourceCredentials>
                                                     <{repoConfig.SourceName}>
-                                                      <add key=""Username"" value=""{repoConfig.Username}"" />
+                                                      <add key=""Username"" value=""{repoConfig.UserName}"" />
                                                       <add key=""ClearTextPassword"" value=""{repoConfig.ClearTextPassword}"" />
                                                     </{repoConfig.SourceName}>
-                                                  </packageSourceCredentials>";
+                                                  </packageSourceCredentials>");
                 }
             }
 
-            var configXml = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var configXml = Invariant($@"<?xml version=""1.0"" encoding=""utf-8""?>
                                    <configuration>
                                      <packageSources>
                                        {packageSource}
                                      </packageSources>
                                      {packageSourceCredentials}
-                                   </configuration>";
+                                   </configuration>");
 
             File.WriteAllText(configFilePath, configXml, Encoding.UTF8);
             this.nugetConfigFilePath = configFilePath;
@@ -119,6 +123,7 @@ namespace Naos.Packaging.NuGet
         /// <param name="nugetConfigFilePath">Path a nuget config xml file.</param>
         /// <param name="nugetExeFilePath">Optional.  Path to nuget.exe. If null then an embedded copy of nuget.exe will be used.</param>
         /// <param name="consoleOutputCallback">Optional.  If specified, then console output will be written to this action.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "nuget", Justification = "Spelling/name is correct.")]
         public PackageRetriever(
             string defaultWorkingDirectory,
             string nugetConfigFilePath,
@@ -127,16 +132,16 @@ namespace Naos.Packaging.NuGet
         {
             this.defaultWorkingDirectory = defaultWorkingDirectory;
 
-            this.tempDirectory = this.SetupTempWorkingDirectory(defaultWorkingDirectory);
+            this.tempDirectory = SetupTempWorkingDirectory(defaultWorkingDirectory);
 
             if (!File.Exists(nugetConfigFilePath))
             {
-                throw new ArgumentException($"{nameof(nugetConfigFilePath)} does not exist on disk.");
+                throw new ArgumentException(Invariant($"{nameof(nugetConfigFilePath)} does not exist on disk."));
             }
 
             this.nugetConfigFilePath = nugetConfigFilePath;
 
-            this.nugetExeFilePath = SetupNugetExe(nugetExeFilePath);
+            this.nugetExeFilePath = this.SetupNugetExe(nugetExeFilePath);
 
             this.consoleOutputCallback = consoleOutputCallback;
 
@@ -153,14 +158,14 @@ namespace Naos.Packaging.NuGet
 
                 if (nodes == null || nodes.Count == 0)
                 {
-                    throw new ArgumentException($"{nameof(nugetConfigFilePath)} has no packageSources");
+                    throw new ArgumentException(Invariant($"{nameof(nugetConfigFilePath)} has no packageSources"));
                 }
 
                 foreach (XmlNode node in nodes)
                 {
                     if (node == null)
                     {
-                        throw new ArgumentException($"Could not parse {nameof(nugetConfigFilePath)} - found null node");
+                        throw new ArgumentException(Invariant($"Could not parse {nameof(nugetConfigFilePath)} - found null node"));
                     }
 
                     var sourceName = node.Attributes["key"]?.InnerText;
@@ -171,11 +176,11 @@ namespace Naos.Packaging.NuGet
                     {
                         try
                         {
-                            protocolVersion = int.Parse(protocolVersionString);
+                            protocolVersion = int.Parse(protocolVersionString, CultureInfo.InvariantCulture);
                         }
                         catch (Exception)
                         {
-                            throw new ArgumentException($"In {nameof(nugetConfigFilePath)} source '{sourceName}:{source}' has an invalid protocolVersion");
+                            throw new ArgumentException(Invariant($"In {nameof(nugetConfigFilePath)} source '{sourceName}:{source}' has an invalid protocolVersion"));
                         }
                     }
 
@@ -191,7 +196,7 @@ namespace Naos.Packaging.NuGet
             }
             catch (Exception ex)
             {
-                throw new ArgumentException($"Could not parse {nameof(nugetConfigFilePath)}", ex);
+                throw new ArgumentException(Invariant($"Could not parse {nameof(nugetConfigFilePath)}"), ex);
             }
 
             this.packageRepositoryConfigurations = repoConfigs;
@@ -222,7 +227,7 @@ namespace Naos.Packaging.NuGet
 
             var workingDirectory = Path.Combine(
                 this.defaultWorkingDirectory,
-                "Down-" + DateTime.Now.ToString(DirectoryDateTimeToStringFormat));
+                "Down-" + DateTime.Now.ToString(DirectoryDateTimeToStringFormat, CultureInfo.InvariantCulture));
 
             var packageFilePath =
                 Using
@@ -279,31 +284,31 @@ namespace Naos.Packaging.NuGet
                     // the only way to install without dependencies is to create a packages.config xml file
                     // to install with dependencies we can simply point nuget.exe at the package id
                     // the file must be called packages.config
-                    var packagesConfigXml = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                    var packagesConfigXml = Invariant($@"<?xml version=""1.0"" encoding=""utf-8""?>
                                            <packages>
                                              <package id=""{packageDescription.Id}"" version=""{packageVersion}"" />
-                                           </packages>";
+                                           </packages>");
                     var packagesConfigXmlDirectory = Path.Combine(this.tempDirectory, Path.GetRandomFileName());
                     Directory.CreateDirectory(packagesConfigXmlDirectory);
                     var packagesConfigXmlFilePath = Path.Combine(packagesConfigXmlDirectory, "packages.config");
                     File.WriteAllText(packagesConfigXmlFilePath, packagesConfigXml, Encoding.UTF8);
-                    toInstall = $"\"{packagesConfigXmlFilePath}\"";
+                    toInstall = Invariant($"\"{packagesConfigXmlFilePath}\"");
                 }
 
                 // there needs to be a space at the end of the output directory path
                 // it doesn't matter whether the output directory has a trailing backslash before the space is added
                 // https://stackoverflow.com/questions/17322147/illegal-characters-in-path-for-nuget-pack
-                var arguments = $"install {toInstall} -outputdirectory \"{workingDirectory} \" -version {packageVersion} -prerelease";
-                consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to download '{packageDescription.Id}-{packageVersion}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
+                var arguments = Invariant($"install {toInstall} -outputdirectory \"{workingDirectory} \" -version {packageVersion} -prerelease");
+                this.consoleOutputCallback?.Invoke(Invariant($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to download '{packageDescription.Id}-{packageVersion}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}"));
                 var output = this.RunNugetCommandLine(arguments);
-                consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
+                this.consoleOutputCallback?.Invoke(Invariant($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}"));
             }
 
             var workingDirectorySnapshotAfter = Directory.GetFiles(workingDirectory, "*", SearchOption.AllDirectories);
 
             var ret =
                 workingDirectorySnapshotAfter.Except(workingDirectorySnapshotBefore)
-                    .Where(_ => _.EndsWith(".nupkg"))
+                    .Where(_ => _.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             return ret;
@@ -322,23 +327,23 @@ namespace Naos.Packaging.NuGet
                 throw new ArgumentException("packageId cannot be null nor whitespace.");
             }
 
-            var arguments = $"list {packageId}";
+            var arguments = Invariant($"list {packageId}");
             if (includePrerelease)
             {
-                arguments = $"{arguments} -prerelease";
+                arguments = Invariant($"{arguments} -prerelease");
             }
 
             if (includeDelisted)
             {
-                arguments = $"{arguments} -includedelisted";
+                arguments = Invariant($"{arguments} -includedelisted");
             }
 
             var sourceArgument = this.BuildSourceUrlArgumentFromSourceName(packageRepositorySourceName);
-            arguments = $"{arguments} {sourceArgument}";
+            arguments = Invariant($"{arguments} {sourceArgument}");
 
-            consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list latest package for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
+            this.consoleOutputCallback?.Invoke(Invariant($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list latest package for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}"));
             var output = this.RunNugetCommandLine(arguments);
-            consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
+            this.consoleOutputCallback?.Invoke(Invariant($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}"));
             var outputLines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
             /* parse output.  output should look like this (the first line may or may not appear):
@@ -352,7 +357,7 @@ namespace Naos.Packaging.NuGet
             PackageDescription result = null;
             foreach (var outputLine in outputLines)
             {
-                if (outputLine.StartsWith("Using credentials from config"))
+                if (outputLine.StartsWith("Using credentials from config", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -373,7 +378,7 @@ namespace Naos.Packaging.NuGet
                         if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.ThrowException)
                         {
                             throw new InvalidOperationException(
-                                $"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {result.Version} and {version}");
+                                Invariant($"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {result.Version} and {version}"));
                         }
                         else if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.UseHighestVersion)
                         {
@@ -383,7 +388,7 @@ namespace Naos.Packaging.NuGet
                             if (version1 == version2)
                             {
                                 throw new NotSupportedException(
-                                    $"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {result.Version} and {version}.  These two versions have the same Major.Minor.Patch version (e.g. 1.2.3).  Comparing [-Suffix] (e.g. 1.2.3-beta1, 1.2.3-beta2) is not supported.");
+                                    Invariant($"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {result.Version} and {version}.  These two versions have the same Major.Minor.Patch version (e.g. 1.2.3).  Comparing [-Suffix] (e.g. 1.2.3-beta1, 1.2.3-beta2) is not supported."));
                             }
                             else if (version2 > version1)
                             {
@@ -393,7 +398,7 @@ namespace Naos.Packaging.NuGet
                         else
                         {
                             throw new NotSupportedException(
-                                $"This {nameof(ConflictingLatestVersionStrategy)} is not supported: {conflictingLatestVersionStrategy}");
+                                Invariant($"This {nameof(ConflictingLatestVersionStrategy)} is not supported: {conflictingLatestVersionStrategy}"));
                         }
                     }
                 }
@@ -403,6 +408,7 @@ namespace Naos.Packaging.NuGet
         }
 
         /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "nuget", Justification = "Spelling/name is correct.")]
         public IReadOnlyCollection<PackageDescription> GetAllVersions(
             string packageId,
             bool includePrerelease = true,
@@ -411,26 +417,26 @@ namespace Naos.Packaging.NuGet
         {
             if (string.IsNullOrWhiteSpace(packageId))
             {
-                throw new ArgumentException($"{nameof(packageId)} must be specified.");
+                throw new ArgumentException(Invariant($"{nameof(packageId)} must be specified."));
             }
 
-            var arguments = $"list {packageId} -allversions";
+            var arguments = Invariant($"list {packageId} -allversions");
             if (includePrerelease)
             {
-                arguments = $"{arguments} -prerelease";
+                arguments = Invariant($"{arguments} -prerelease");
             }
 
             if (includeDelisted)
             {
-                arguments = $"{arguments} -includedelisted";
+                arguments = Invariant($"{arguments} -includedelisted");
             }
 
             var sourceArgument = this.BuildSourceUrlArgumentFromSourceName(packageRepositorySourceName);
-            arguments = $"{arguments} {sourceArgument}";
+            arguments = Invariant($"{arguments} {sourceArgument}");
 
-            consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list all packages for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
+            this.consoleOutputCallback?.Invoke(Invariant($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list all packages for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}"));
             var output = this.RunNugetCommandLine(arguments);
-            consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
+            this.consoleOutputCallback?.Invoke(Invariant($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}"));
 
             throw new NotImplementedException("nuget.exe has a bug whereby only the latest version is returned");
         }
@@ -448,34 +454,34 @@ namespace Naos.Packaging.NuGet
 
             if (string.IsNullOrWhiteSpace(packageDescription.Id))
             {
-                throw new ArgumentException($"{nameof(packageDescription)} {nameof(PackageDescription.Id)} is required");
+                throw new ArgumentException(Invariant($"{nameof(packageDescription)} {nameof(PackageDescription.Id)} is required"));
             }
 
             if (string.IsNullOrWhiteSpace(packageDescription.Version))
             {
-                throw new ArgumentException($"{nameof(packageDescription)} {nameof(PackageDescription.Version)} is required");
+                throw new ArgumentException(Invariant($"{nameof(packageDescription)} {nameof(PackageDescription.Version)} is required"));
             }
 
             if (string.IsNullOrWhiteSpace(packageRepositorySourceName))
             {
-                throw new ArgumentException($"{nameof(packageRepositorySourceName)} is required");
+                throw new ArgumentException(Invariant($"{nameof(packageRepositorySourceName)} is required"));
             }
 
             var sourceArgument = this.BuildSourceUrlArgumentFromSourceName(packageRepositorySourceName);
-            var arguments = $"delete {packageDescription.Id} {packageDescription.Version} {sourceArgument}";
+            var arguments = Invariant($"delete {packageDescription.Id} {packageDescription.Version} {sourceArgument}");
             if (!string.IsNullOrWhiteSpace(apiKey))
             {
-                arguments = $"{arguments} -ApiKey {apiKey}";
+                arguments = Invariant($"{arguments} -ApiKey {apiKey}");
             }
 
-            consoleOutputCallback?.Invoke($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to delete package id '{packageDescription.Id}' version '{packageDescription.Version}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}");
+            this.consoleOutputCallback?.Invoke(Invariant($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to delete package id '{packageDescription.Id}' version '{packageDescription.Version}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}"));
 
             // tested on the Nuget.org public gallery:
             // if the version of the package has been unlisted, then no error occurs
             // if the version of the package has never existed, then we get a 404 error
             // if the package name has never existed, then we get a 404 error
             var output = this.RunNugetCommandLine(arguments, appendConfigFileArgument: false);
-            consoleOutputCallback?.Invoke($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}");
+            this.consoleOutputCallback?.Invoke(Invariant($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}"));
         }
 
         /// <inheritdoc />
@@ -518,7 +524,7 @@ namespace Naos.Packaging.NuGet
             // download package (decompressed)
             var workingDirectory = Path.Combine(
                 this.defaultWorkingDirectory,
-                "PackageFileContentsSearch-" + DateTime.Now.ToString(DirectoryDateTimeToStringFormat));
+                "PackageFileContentsSearch-" + DateTime.Now.ToString(DirectoryDateTimeToStringFormat, CultureInfo.InvariantCulture));
             var packageFilePath = Path.Combine(workingDirectory, "Package.zip");
             Directory.CreateDirectory(workingDirectory);
             File.WriteAllBytes(packageFilePath, package.PackageFileBytes);
@@ -628,6 +634,7 @@ namespace Naos.Packaging.NuGet
         /// Disposes the class.
         /// </summary>
         /// <param name="disposing">Determines if managed resources should be disposed.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Not much we can do if it doesn't work.")]
         protected virtual void Dispose(
             bool disposing)
         {
@@ -643,16 +650,18 @@ namespace Naos.Packaging.NuGet
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It is managed.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "nuget", Justification = "Spelling/name is correct.")]
         private string RunNugetCommandLine(
             string arguments,
             bool appendConfigFileArgument = true)
         {
             if (appendConfigFileArgument)
             {
-                arguments = $"{arguments} -configfile \"{this.nugetConfigFilePath}\"";
+                arguments = Invariant($"{arguments} -configfile \"{this.nugetConfigFilePath}\"");
             }
 
-            arguments = $"{arguments} -noninteractive";
+            arguments = Invariant($"{arguments} -noninteractive");
 
             var process = new Process
             {
@@ -688,29 +697,28 @@ namespace Naos.Packaging.NuGet
             }
         }
 
-        private string SetupTempWorkingDirectory(
-            string defaultWorkingDirectory)
+        private static string SetupTempWorkingDirectory(string workingDirectory)
         {
-            if (!Directory.Exists(defaultWorkingDirectory))
+            if (!Directory.Exists(workingDirectory))
             {
-                throw new ArgumentException($"{nameof(defaultWorkingDirectory)} does not exist on disk.");
+                throw new ArgumentException(Invariant($"{nameof(workingDirectory)} does not exist on disk."));
             }
 
-            var result = Path.Combine(this.defaultWorkingDirectory, Path.GetRandomFileName());
+            var result = Path.Combine(workingDirectory, Path.GetRandomFileName());
             Directory.CreateDirectory(result);
             return result;
         }
 
-        private string SetupNugetExe(
-            string nugetExeFilePath)
+        private string SetupNugetExe(string nugetExeFilePathOverride)
         {
-            if (nugetExeFilePath == null)
+            var result = nugetExeFilePathOverride;
+            if (result == null)
             {
                 // write embedded nuget.exe to disk
-                nugetExeFilePath = Path.Combine(this.tempDirectory, NugetExeFileName);
+                result = Path.Combine(this.tempDirectory, NugetExeFileName);
                 using (var nugetExeStream = AssemblyHelper.OpenEmbeddedResourceStream(NugetExeFileName))
                 {
-                    using (var fileStream = new FileStream(nugetExeFilePath, FileMode.Create, FileAccess.Write))
+                    using (var fileStream = new FileStream(result, FileMode.Create, FileAccess.Write))
                     {
                         nugetExeStream.CopyTo(fileStream);
                     }
@@ -718,13 +726,13 @@ namespace Naos.Packaging.NuGet
             }
             else
             {
-                if (!File.Exists(nugetExeFilePath))
+                if (!File.Exists(result))
                 {
-                    throw new ArgumentException($"{nameof(nugetExeFilePath)} does not exist on disk.");
+                    throw new ArgumentException(Invariant($"{nameof(result)} does not exist on disk."));
                 }
             }
 
-            return nugetExeFilePath;
+            return result;
         }
 
         private string BuildSourceUrlArgumentFromSourceName(
@@ -736,10 +744,10 @@ namespace Naos.Packaging.NuGet
                 var packageRepository = this.packageRepositoryConfigurations.SingleOrDefault(_ => _.SourceName.Equals(packageRepositorySourceName, StringComparison.OrdinalIgnoreCase));
                 if (packageRepository == null)
                 {
-                    throw new ArgumentException($"{nameof(packageRepositorySourceName)} is not a valid source in the nuget config");
+                    throw new ArgumentException(Invariant($"{nameof(packageRepositorySourceName)} is not a valid source in the nuget config"));
                 }
 
-                result = $"-source \"{packageRepository.Source}\"";
+                result = Invariant($"-source \"{packageRepository.Source}\"");
             }
 
             return result;

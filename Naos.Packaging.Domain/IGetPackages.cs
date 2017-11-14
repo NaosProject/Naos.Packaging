@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IGetPackages.cs" company="Naos">
-//   Copyright 2015 Naos
+//    Copyright (c) Naos 2017. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -111,7 +111,7 @@ namespace Naos.Packaging.Domain
         /// </summary>
         /// <param name="nuSpecFileContents">Contents of the NuSpec file to read from.</param>
         /// <returns>Version of the package as declared in the NuSpec file.</returns>
-        string GetVersionFromNuSpecFile(
-            string nuSpecFileContents);
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "Nu", Justification = "Spelling/name is correct.")]
+        string GetVersionFromNuSpecFile(string nuSpecFileContents);
     }
 }

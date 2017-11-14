@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PackageRepositoryConfiguration.cs" company="Naos">
-//   Copyright 2015 Naos
+//    Copyright (c) Naos 2017. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -16,6 +16,7 @@ namespace Naos.Packaging.Domain
         /// <summary>
         /// Gets the package repository configuration for the v2 nuget public gallery.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Nuget", Justification = "Spelling/name is correct.")]
         public static PackageRepositoryConfiguration NugetOrgV2 => new PackageRepositoryConfiguration
         {
             ProtocolVersion = 2,
@@ -26,6 +27,7 @@ namespace Naos.Packaging.Domain
         /// <summary>
         /// Gets the package repository configuration for the v3 nuget public gallery.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Nuget", Justification = "Spelling/name is correct.")]
         public static PackageRepositoryConfiguration NugetOrgV3 => new PackageRepositoryConfiguration
         {
             ProtocolVersion = 3,
@@ -36,6 +38,8 @@ namespace Naos.Packaging.Domain
         /// <summary>
         /// Gets the package repository configurations for the nuget public gallery.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Nuget", Justification = "Spelling/name is correct.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Configs", Justification = "Spelling/name is correct.")]
         public static IReadOnlyCollection<PackageRepositoryConfiguration> AllNugetOrgConfigs => new[] { NugetOrgV2, NugetOrgV3 };
 
         /// <summary>
@@ -51,7 +55,7 @@ namespace Naos.Packaging.Domain
         /// <summary>
         /// Gets or sets the username.
         /// </summary>
-        public string Username { get; set; }
+        public string UserName { get; set; }
 
         /// <summary>
         /// Gets or sets the password.

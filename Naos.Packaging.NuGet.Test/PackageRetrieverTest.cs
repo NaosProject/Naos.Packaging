@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PackageRetrieverTest.cs" company="Naos">
-//   Copyright 2015 Naos
+//    Copyright (c) Naos 2017. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -15,16 +15,18 @@ namespace Naos.Packaging.NuGet.Test
 
     using Xunit;
 
-    public class PackageRetrieverTest
+    public static class PackageRetrieverTest
     {
+#pragma warning disable SA1305 // Field names must not use Hungarian notation
+
         [Fact(Skip = "Meant for local debugging and to show usage.")]
-        public void DownloadPrivate()
+        public static void DownloadPrivate()
         {
             var repoConfig = new PackageRepositoryConfiguration
             {
                 Source = "https://ci.appveyor.com/nuget/XXX",
                 ClearTextPassword = "ThisIsPassword",
-                Username = "ThisIsUser",
+                UserName = "ThisIsUser",
                 SourceName = "ThisIsGalleryName",
                 ProtocolVersion = 2,
             };
@@ -36,7 +38,7 @@ namespace Naos.Packaging.NuGet.Test
         }
 
         [Fact(Skip = "Meant for local debugging and to show usage.")]
-        public void DownloadPublic()
+        public static void DownloadPublic()
         {
             var defaultWorkingDirectory = @"D:\Temp\NewNuGet";
             var pm = new PackageRetriever(defaultWorkingDirectory, PackageRepositoryConfiguration.AllNugetOrgConfigs);
@@ -147,7 +149,8 @@ namespace Naos.Packaging.NuGet.Test
       <dependency id=""AWSSDK"" version=""2.3.50.1"" />
     </dependencies>
   </metadata>
-</package>";
+</package>"
+;
 
             var packageManager = new PackageRetriever(Path.GetTempPath(), PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var ex = Assert.Throws<ArgumentException>(() => packageManager.GetVersionFromNuSpecFile(nuSpecFileContents));
