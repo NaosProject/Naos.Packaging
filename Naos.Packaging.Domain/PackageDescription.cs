@@ -20,7 +20,7 @@ namespace Naos.Packaging.Domain
         /// <summary>
         /// The package id for a null package that will run through without any interaction.
         /// </summary>
-        public const string NullPackageId = "NullPackage";
+        public const string NullPackageId = "Naos.Packaging.Null";
 
         /// <summary>
         /// Gets or sets the ID of the package.

@@ -1,19 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9FEBD7FE-8879-461F-8E5F-8C8B292F802B}</ProjectGuid>
+    <ProjectGuid>{3221B1A4-DB5A-4750-8818-C92F426D9DEF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Naos.Packaging.NuGet</RootNamespace>
-    <AssemblyName>Naos.Packaging.NuGet</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <RootNamespace>Naos.Packaging.Null</RootNamespace>
+    <AssemblyName>Naos.Packaging.Null</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,7 +24,7 @@
     </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Naos.Packaging.NuGet.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Naos.Packaging.Null.xml</DocumentationFile>
     <CodeAnalysisRuleSet />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -35,61 +35,31 @@
     </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Naos.Packaging.NuGet.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Naos.Packaging.Null.xml</DocumentationFile>
     <CodeAnalysisRuleSet />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
-    <Reference Include="System.IdentityModel" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include=".recipes\OBeautifulCode.Reflection\AssemblyHelper.cs" />
-    <Compile Include=".recipes\OBeautifulCode.Reflection\CompressionMethod.cs" />
-    <Compile Include=".recipes\Spritely.MustValidation\MakeRule.cs" />
-    <Compile Include=".recipes\Spritely.MustValidation\MustExtensions.cs" />
-    <Compile Include=".recipes\Spritely.MustValidation\RuleExtensions.cs" />
-    <Compile Include=".recipes\Spritely.MustValidation\Rules.cs" />
-    <Compile Include=".recipes\Spritely.MustValidation\ValidatedNotNullAttribute.cs" />
-    <Compile Include=".Spritely.Recipes\Redo\BackOffStrategy.cs" />
-    <Compile Include=".Spritely.Recipes\Redo\RetriableAction.cs" />
-    <Compile Include=".Spritely.Recipes\Redo\RetriableActionAsync.cs" />
-    <Compile Include=".Spritely.Recipes\Redo\RetriableFunction.cs" />
-    <Compile Include=".Spritely.Recipes\Redo\RetriableFunctionAsync.cs" />
-    <Compile Include=".Spritely.Recipes\Redo\Using.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="PackageRetriever.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include=".analyzers\stylecop.json" />
     <None Include=".analyzers\release.ruleset" />
-    <None Include="app.config" />
-    <None Include="Naos.Packaging.NuGet.override-nuspec" />
+    <None Include="Naos.Packaging.Null.override-nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Naos.Packaging.Domain\Naos.Packaging.Domain.csproj">
-      <Project>{2b0fdf5d-c88d-4c1e-b7a2-3baec4ad3267}</Project>
-      <Name>Naos.Packaging.Domain</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="nuget.exe" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.0-beta004\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.0-beta004\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".analyzers\dictionary.xml" />
@@ -102,11 +72,4 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Naos.Build.Analyzers.1.51.0-dealwithstylecopbeta\build\Naos.Build.Analyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Naos.Build.Analyzers.1.51.0-dealwithstylecopbeta\build\Naos.Build.Analyzers.targets'))" />
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

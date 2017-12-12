@@ -20,6 +20,7 @@ namespace Naos.Packaging.NuGet
 
     using OBeautifulCode.Reflection.Recipes;
 
+    using Spritely.Recipes;
     using Spritely.Redo;
 
     using static System.FormattableString;
@@ -220,10 +221,7 @@ namespace Naos.Packaging.NuGet
         public byte[] GetPackageFile(
             PackageDescription packageDescription)
         {
-            if (string.Equals(packageDescription.Id, PackageDescription.NullPackageId, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return null;
-            }
+            new { packageDescription }.Must().NotBeNull().OrThrow();
 
             var workingDirectory = Path.Combine(
                 this.defaultWorkingDirectory,
@@ -260,7 +258,7 @@ namespace Naos.Packaging.NuGet
 
             var workingDirectorySnapshotBefore = Directory.GetFiles(workingDirectory, "*", SearchOption.AllDirectories);
 
-            foreach (var packageDescription in packageDescriptions)
+            foreach (var packageDescription in packageDescriptions ?? new PackageDescription[0])
             {
                 var packageVersion = packageDescription.Version;
                 if (string.IsNullOrWhiteSpace(packageVersion))
@@ -516,10 +514,8 @@ namespace Naos.Packaging.NuGet
             Package package,
             string searchPattern)
         {
-            if (string.Equals(package.PackageDescription.Id, PackageDescription.NullPackageId, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return new Dictionary<string, byte[]>();
-            }
+            new { package }.Must().NotBeNull().OrThrowFirstFailure();
+            new { searchPattern }.Must().NotBeNull().OrThrowFirstFailure();
 
             // download package (decompressed)
             var workingDirectory = Path.Combine(

@@ -1,0 +1,6 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <description>Empty package that exists in the gallery to communicate a "Null Object Pattern" at the package level.</description>
+  </metadata>
+</package>
