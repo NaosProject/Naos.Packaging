@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="PackageRetriever.cs" company="Naos">
-//    Copyright (c) Naos 2017. All rights reserved.
+// <copyright file="PackageRetriever.cs" company="Naos Project">
+//    Copyright (c) Naos Project 2019. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -19,8 +19,7 @@ namespace Naos.Packaging.NuGet
     using Naos.Packaging.Domain;
 
     using OBeautifulCode.Reflection.Recipes;
-
-    using Spritely.Recipes;
+    using OBeautifulCode.Validation.Recipes;
     using Spritely.Redo;
 
     using static System.FormattableString;
@@ -221,7 +220,7 @@ namespace Naos.Packaging.NuGet
         public byte[] GetPackageFile(
             PackageDescription packageDescription)
         {
-            new { packageDescription }.Must().NotBeNull().OrThrow();
+            new { packageDescription }.Must().NotBeNull();
 
             var workingDirectory = Path.Combine(
                 this.defaultWorkingDirectory,
@@ -514,8 +513,8 @@ namespace Naos.Packaging.NuGet
             Package package,
             string searchPattern)
         {
-            new { package }.Must().NotBeNull().OrThrowFirstFailure();
-            new { searchPattern }.Must().NotBeNull().OrThrowFirstFailure();
+            new { package }.Must().NotBeNull();
+            new { searchPattern }.Must().NotBeNull();
 
             // download package (decompressed)
             var workingDirectory = Path.Combine(
@@ -669,8 +668,8 @@ namespace Naos.Packaging.NuGet
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
-                    ErrorDialog = false
-                }
+                    ErrorDialog = false,
+                },
             };
 
             using (process)

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="PackageDescription.cs" company="Naos">
-//    Copyright (c) Naos 2017. All rights reserved.
+// <copyright file="PackageDescription.cs" company="Naos Project">
+//    Copyright (c) Naos Project 2019. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 

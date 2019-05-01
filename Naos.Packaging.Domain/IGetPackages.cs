@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IGetPackages.cs" company="Naos">
-//    Copyright (c) Naos 2017. All rights reserved.
+// <copyright file="IGetPackages.cs" company="Naos Project">
+//    Copyright (c) Naos Project 2019. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -112,6 +112,8 @@ namespace Naos.Packaging.Domain
         /// <param name="nuSpecFileContents">Contents of the NuSpec file to read from.</param>
         /// <returns>Version of the package as declared in the NuSpec file.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "Nu", Justification = "Spelling/name is correct.")]
+#pragma warning disable SA1305 // Field names should not use Hungarian notation - NuSpec is the domain name.
         string GetVersionFromNuSpecFile(string nuSpecFileContents);
+#pragma warning restore SA1305 // Field names should not use Hungarian notation
     }
 }

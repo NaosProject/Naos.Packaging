@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Naos.Packaging.NuGet.Test",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Naos.Packaging.Null", "Naos.Packaging.Null\Naos.Packaging.Null.csproj", "{3221B1A4-DB5A-4750-8818-C92F426D9DEF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Naos.Packaging.Serialization.Json", "Naos.Packaging.Serialization.Json\Naos.Packaging.Serialization.Json.csproj", "{E1EEB6C0-F13A-46A9-89B7-2CAA7F562032}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Naos.Packaging.Serialization.Bson", "Naos.Packaging.Serialization.Bson\Naos.Packaging.Serialization.Bson.csproj", "{BE057E43-25AC-485E-AA3E-E996F925D448}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{3221B1A4-DB5A-4750-8818-C92F426D9DEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3221B1A4-DB5A-4750-8818-C92F426D9DEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3221B1A4-DB5A-4750-8818-C92F426D9DEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1EEB6C0-F13A-46A9-89B7-2CAA7F562032}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1EEB6C0-F13A-46A9-89B7-2CAA7F562032}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1EEB6C0-F13A-46A9-89B7-2CAA7F562032}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1EEB6C0-F13A-46A9-89B7-2CAA7F562032}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE057E43-25AC-485E-AA3E-E996F925D448}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE057E43-25AC-485E-AA3E-E996F925D448}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE057E43-25AC-485E-AA3E-E996F925D448}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE057E43-25AC-485E-AA3E-E996F925D448}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,17 +1,19 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="PackageRepositoryConfiguration.cs" company="Naos">
-//    Copyright (c) Naos 2017. All rights reserved.
+// <copyright file="PackageRepositoryConfiguration.cs" company="Naos Project">
+//    Copyright (c) Naos Project 2019. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace Naos.Packaging.Domain
 {
+    using System;
     using System.Collections.Generic;
+    using OBeautifulCode.Math.Recipes;
 
     /// <summary>
     /// Model object to provide details on the repository.
     /// </summary>
-    public class PackageRepositoryConfiguration
+    public class PackageRepositoryConfiguration : IEquatable<PackageRepositoryConfiguration>
     {
         /// <summary>
         /// Gets the package repository configuration for the v2 nuget public gallery.
@@ -21,7 +23,7 @@ namespace Naos.Packaging.Domain
         {
             ProtocolVersion = 2,
             SourceName = "nugetv2",
-            Source = "https://www.nuget.org/api/v2/"
+            Source = "https://www.nuget.org/api/v2/",
         };
 
         /// <summary>
@@ -32,7 +34,7 @@ namespace Naos.Packaging.Domain
         {
             ProtocolVersion = 3,
             SourceName = "nugetv3",
-            Source = "https://api.nuget.org/v3/index.json"
+            Source = "https://api.nuget.org/v3/index.json",
         };
 
         /// <summary>
@@ -66,5 +68,47 @@ namespace Naos.Packaging.Domain
         /// Gets or sets the version of the protocol for this repository.
         /// </summary>
         public int? ProtocolVersion { get; set; }
+
+        /// <summary>
+        /// Equality operator.
+        /// </summary>
+        /// <param name="first">First parameter.</param>
+        /// <param name="second">Second parameter.</param>
+        /// <returns>A value indicating whether or not the two items are equal.</returns>
+        public static bool operator ==(PackageRepositoryConfiguration first, PackageRepositoryConfiguration second)
+        {
+            if (ReferenceEquals(first, second))
+            {
+                return true;
+            }
+
+            if (ReferenceEquals(first, null) || ReferenceEquals(second, null))
+            {
+                return false;
+            }
+
+            return string.Equals(first.Source, second.Source, StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(first.SourceName, second.SourceName, StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(first.UserName, second.UserName, StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(first.ClearTextPassword, second.ClearTextPassword, StringComparison.OrdinalIgnoreCase) &&
+                   first.ProtocolVersion == second.ProtocolVersion;
+        }
+
+        /// <summary>
+        /// Inequality operator.
+        /// </summary>
+        /// <param name="first">First parameter.</param>
+        /// <param name="second">Second parameter.</param>
+        /// <returns>A value indicating whether or not the two items are inequal.</returns>
+        public static bool operator !=(PackageRepositoryConfiguration first, PackageRepositoryConfiguration second) => !(first == second);
+
+        /// <inheritdoc />
+        public bool Equals(PackageRepositoryConfiguration other) => this == other;
+
+        /// <inheritdoc />
+        public override bool Equals(object obj) => this == (obj as PackageRepositoryConfiguration);
+
+        /// <inheritdoc />
+        public override int GetHashCode() => HashCodeHelper.Initialize().Hash(this.Source?.ToUpperInvariant()).Hash(this.SourceName?.ToUpperInvariant()).Hash(this.UserName?.ToUpperInvariant()).Hash(this.ClearTextPassword).Hash(this.ProtocolVersion).Value;
     }
 }

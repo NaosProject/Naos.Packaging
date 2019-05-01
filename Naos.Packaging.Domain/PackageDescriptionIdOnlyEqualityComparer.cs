@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="PackageDescriptionIdOnlyEqualityComparer.cs" company="Naos">
-//    Copyright (c) Naos 2017. All rights reserved.
+// <copyright file="PackageDescriptionIdOnlyEqualityComparer.cs" company="Naos Project">
+//    Copyright (c) Naos Project 2019. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -9,8 +9,7 @@ namespace Naos.Packaging.Domain
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
-    using Spritely.Recipes;
+    using OBeautifulCode.Validation.Recipes;
 
     /// <summary>
     /// Comparer for use when running LINQ expressions on packages to only use the package ID.
@@ -27,8 +26,8 @@ namespace Naos.Packaging.Domain
             ICollection<PackageDescription> firstSet,
             ICollection<PackageDescription> secondSet)
         {
-            new { firstSet }.Must().NotBeNull().OrThrow();
-            new { secondSet }.Must().NotBeNull().OrThrow();
+            new { firstSet }.Must().NotBeNull();
+            new { secondSet }.Must().NotBeNull();
 
             if (firstSet.Count == 0 && secondSet.Count == 0)
             {
@@ -56,7 +55,7 @@ namespace Naos.Packaging.Domain
         /// <inheritdoc />
         public int GetHashCode(PackageDescription obj)
         {
-            new { obj }.Must().NotBeNull().OrThrow();
+            new { obj }.Must().NotBeNull();
 
             var id = obj.Id;
             var hashCode = new Tuple<string>(id.ToUpperInvariant()).GetHashCode();
