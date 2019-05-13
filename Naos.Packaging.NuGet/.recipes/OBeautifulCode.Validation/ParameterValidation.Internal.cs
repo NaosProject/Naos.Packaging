@@ -12,6 +12,7 @@ namespace OBeautifulCode.Validation.Recipes
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Text.RegularExpressions;
 
@@ -29,6 +30,12 @@ namespace OBeautifulCode.Validation.Recipes
             new HashSet<char>(
                 new char[0]
                     .Concat(Enumerable.Range(48, 10).Select(Convert.ToChar))
+                    .Concat(Enumerable.Range(65, 26).Select(Convert.ToChar))
+                    .Concat(Enumerable.Range(97, 26).Select(Convert.ToChar)));
+
+        private static readonly HashSet<char> AlphabeticCharactersHashSet =
+            new HashSet<char>(
+                new char[0]
                     .Concat(Enumerable.Range(65, 26).Select(Convert.ToChar))
                     .Concat(Enumerable.Range(97, 26).Select(Convert.ToChar)));
 
@@ -776,8 +783,22 @@ namespace OBeautifulCode.Validation.Recipes
             }
         }
 
+        private static void BeAlphabeticInternal(
+            Validation validation)
+        {
+            BeInCharacterSetInternal(validation, AlphabeticCharactersHashSet, BeAlphabeticExceptionMessageSuffix);
+        }
+
         private static void BeAlphanumericInternal(
             Validation validation)
+        {
+            BeInCharacterSetInternal(validation, AlphaNumericCharactersHashSet, BeAlphanumericExceptionMessageSuffix);
+        }
+
+        private static void BeInCharacterSetInternal(
+            Validation validation,
+            HashSet<char> allowedCharactersHashSet,
+            string exceptionMessageSuffix)
         {
             NotBeNullInternal(validation);
 
@@ -788,11 +809,11 @@ namespace OBeautifulCode.Validation.Recipes
             bool shouldThrow;
             if (otherAllowedCharacters == null)
             {
-                shouldThrow = stringValue.Any(_ => !AlphaNumericCharactersHashSet.Contains(_));
+                shouldThrow = stringValue.Any(_ => !allowedCharactersHashSet.Contains(_));
             }
             else
             {
-                var allowedCharactersHashSet = new HashSet<char>(AlphaNumericCharactersHashSet);
+                allowedCharactersHashSet = new HashSet<char>(allowedCharactersHashSet);
                 foreach (var otherAllowedCharacter in otherAllowedCharacters)
                 {
                     allowedCharactersHashSet.Add(otherAllowedCharacter);
@@ -803,7 +824,7 @@ namespace OBeautifulCode.Validation.Recipes
 
             if (shouldThrow)
             {
-                var exceptionMessage = BuildArgumentExceptionMessage(validation, BeAlphanumericExceptionMessageSuffix, Include.FailingValue);
+                var exceptionMessage = BuildArgumentExceptionMessage(validation, exceptionMessageSuffix, Include.FailingValue);
 
                 var exception = new ArgumentException(exceptionMessage).AddData(validation.Data);
 
@@ -872,6 +893,54 @@ namespace OBeautifulCode.Validation.Recipes
             if (shouldThrow)
             {
                 var exceptionMessage = BuildArgumentExceptionMessage(validation, NotBeMatchedByRegexExceptionMessageSuffix, Include.FailingValue);
+
+                var exception = new ArgumentException(exceptionMessage).AddData(validation.Data);
+
+                throw exception;
+            }
+        }
+
+        [SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.StartsWith(System.String)", Justification = "User can specify whether to validate with comparisonType or not.")]
+        private static void StartWithInternal(
+            Validation validation)
+        {
+            NotBeNullInternal(validation);
+
+            var parameterValue = (string)validation.Value;
+            var comparisonValue = (string)validation.ValidationParameters[0].Value;
+            var comparisonType = (StringComparison?)validation.ValidationParameters[1].Value;
+
+            var shouldThrow = comparisonType == null
+                ? !parameterValue.StartsWith(comparisonValue)
+                : !parameterValue.StartsWith(comparisonValue, (StringComparison) comparisonType);
+
+            if (shouldThrow)
+            {
+                var exceptionMessage = BuildArgumentExceptionMessage(validation, StartWithExceptionMessageSuffix, Include.FailingValue);
+
+                var exception = new ArgumentException(exceptionMessage).AddData(validation.Data);
+
+                throw exception;
+            }
+        }
+
+        [SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.StartsWith(System.String)", Justification = "User can specify whether to validate with comparisonType or not.")]
+        private static void NotStartWithInternal(
+            Validation validation)
+        {
+            NotBeNullInternal(validation);
+
+            var parameterValue = (string)validation.Value;
+            var comparisonValue = (string)validation.ValidationParameters[0].Value;
+            var comparisonType = (StringComparison?)validation.ValidationParameters[1].Value;
+
+            var shouldThrow = comparisonType == null
+                ? parameterValue.StartsWith(comparisonValue)
+                : parameterValue.StartsWith(comparisonValue, (StringComparison)comparisonType);
+
+            if (shouldThrow)
+            {
+                var exceptionMessage = BuildArgumentExceptionMessage(validation, NotStartWithExceptionMessageSuffix, Include.FailingValue);
 
                 var exception = new ArgumentException(exceptionMessage).AddData(validation.Data);
 
