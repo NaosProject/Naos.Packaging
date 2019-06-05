@@ -17,6 +17,6 @@ namespace Naos.Packaging.Serialization.Bson
     public class PackagingBsonConfiguration : BsonConfigurationBase
     {
         /// <inheritdoc />
-        protected override IReadOnlyCollection<Type> TypesToAutoRegister => new[] { typeof(Package), typeof(PackageDescription), typeof(PackageRepositoryConfiguration) };
+        protected override IReadOnlyCollection<Type> ClassTypesToRegister => new[] { typeof(Package), typeof(PackageDescription), typeof(PackageRepositoryConfiguration) };
     }
 }

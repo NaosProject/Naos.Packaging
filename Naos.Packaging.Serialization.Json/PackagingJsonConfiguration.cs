@@ -17,6 +17,6 @@ namespace Naos.Packaging.Serialization.Json
     public class PackagingJsonConfiguration : JsonConfigurationBase
     {
         /// <inheritdoc />
-        protected override IReadOnlyCollection<Type> TypesToAutoRegister => new[] { typeof(Package), typeof(PackageDescription), typeof(PackageRepositoryConfiguration) };
+        protected override IReadOnlyCollection<Type> ClassTypesToRegister => new[] { typeof(Package), typeof(PackageDescription), typeof(PackageRepositoryConfiguration) };
     }
 }
