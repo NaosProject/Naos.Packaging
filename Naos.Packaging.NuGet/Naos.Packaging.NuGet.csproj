@@ -59,7 +59,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include=".recipes\Naos.RunWithRetry\Run.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Collection\EnumerableEqualityComparer.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Collection\EnumerableEqualityComparerStrategy.cs" />
     <Compile Include=".recipes\OBeautifulCode.Collection\EnumerableExtensions.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Math\HashCodeHelper.cs" />
     <Compile Include=".recipes\OBeautifulCode.Reflection\AssemblyHelper.cs" />
     <Compile Include=".recipes\OBeautifulCode.Reflection\CompressionMethod.cs" />
     <Compile Include=".recipes\OBeautifulCode.String\StringExtensions.cs" />
