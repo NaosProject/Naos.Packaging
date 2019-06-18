@@ -40,7 +40,12 @@ namespace Naos.Packaging.NuGet.Test
         [Fact(Skip = "Meant for local debugging and to show usage.")]
         public static void DownloadPublic()
         {
-            var defaultWorkingDirectory = @"D:\Temp\NewNuGet";
+            var defaultWorkingDirectory = FormattableString.Invariant($@"D:\Temp\{nameof(Naos)}.{nameof(Naos.Packaging)}.{nameof(Naos.Packaging.NuGet.Test)}.{nameof(PackageRetrieverTest)}.{nameof(DownloadPublic)}");
+            if (!Directory.Exists(defaultWorkingDirectory))
+            {
+                Directory.CreateDirectory(defaultWorkingDirectory);
+            }
+
             var pm = new PackageRetriever(defaultWorkingDirectory, PackageRepositoryConfiguration.AllNugetOrgConfigs);
             var package = pm.GetPackage(new PackageDescription { Id = "Newtonsoft.Json" });
             Assert.NotNull(package.PackageFileBytes);

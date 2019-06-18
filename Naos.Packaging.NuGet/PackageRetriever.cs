@@ -221,21 +221,25 @@ namespace Naos.Packaging.NuGet
             PackageDescription packageDescription)
         {
             new { packageDescription }.Must().NotBeNull();
-
-            var workingDirectory = Path.Combine(
-                this.defaultWorkingDirectory,
-                "Down-" + DateTime.Now.ToString(DirectoryDateTimeToStringFormat, CultureInfo.InvariantCulture));
-
-            var packageFilePath =
+            var ret =
                 Using
                     .LinearBackOff(TimeSpan.FromSeconds(5))
-                    .Run(() => this.DownloadPackages(new[] { packageDescription }, workingDirectory).Single())
+                    .Run(() =>
+                    {
+                        var workingDirectory = Path.Combine(
+                            this.defaultWorkingDirectory,
+                            "Down-" + DateTime.Now.ToString(
+                                DirectoryDateTimeToStringFormat,
+                                CultureInfo.InvariantCulture));
+
+                        var packageFilePath = this.DownloadPackages(new[] { packageDescription }, workingDirectory).Single();
+                        var packageFileBytes = File.ReadAllBytes(packageFilePath);
+
+                        // clean up temp files
+                        Directory.Delete(workingDirectory, true);
+                        return packageFileBytes;
+                    })
                     .Now();
-
-            var ret = File.ReadAllBytes(packageFilePath);
-
-            // clean up temp files
-            Directory.Delete(workingDirectory, true);
 
             return ret;
         }
