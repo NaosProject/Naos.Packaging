@@ -58,14 +58,50 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include=".analyzers\SuppressBecause.cs" />
     <Compile Include=".recipes\Naos.RunWithRetry\Run.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\Actions.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\ApplyBecause.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\AssertionKind.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\AssertionTracker.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\AssertionTrackerShould.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\AssertionVerificationFailedException.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\Delegates.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\ImproperUseOfAssertionFrameworkException.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\Range.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\SuppressBecause.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\TestAssertionVerificationFailedException.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\TypeValidation.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\ValidatedNotNullAttribute.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\VerifiableItem.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\Verification.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\VerificationParameter.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.Helpers.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.Internal.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.Strings.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.TypeValidation.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.Workflow.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\WorkflowExtensions\WorkflowExtensions.cs" />
     <Compile Include=".recipes\OBeautifulCode.Collection\EnumerableEqualityComparer.cs" />
     <Compile Include=".recipes\OBeautifulCode.Collection\EnumerableEqualityComparerStrategy.cs" />
     <Compile Include=".recipes\OBeautifulCode.Collection\EnumerableExtensions.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Equality\DateTimeEqualityComparer.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Equality\DictionaryEqualityComparer.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Equality\EnumerableEqualityComparer.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Equality\EnumerableEqualityComparerStrategy.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Equality\EqualityComparerHelper.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Equality\EqualityExtensions.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Equality\HashCodeHelper.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Equality\ReadOnlyDictionaryEqualityComparer.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Equality\SuppressBecause.cs" />
     <Compile Include=".recipes\OBeautifulCode.Math\HashCodeHelper.cs" />
     <Compile Include=".recipes\OBeautifulCode.Reflection\AssemblyHelper.cs" />
     <Compile Include=".recipes\OBeautifulCode.Reflection\CompressionMethod.cs" />
     <Compile Include=".recipes\OBeautifulCode.String\StringExtensions.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Type\SuppressBecause.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Type\ToStringReadableOptions.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Type\TypeExtensions.cs" />
     <Compile Include=".recipes\OBeautifulCode.Validation\ApplyBecause.cs" />
     <Compile Include=".recipes\OBeautifulCode.Validation\DictionaryExtensions.cs" />
     <Compile Include=".recipes\OBeautifulCode.Validation\Parameter.cs" />
@@ -105,19 +141,19 @@
     <EmbeddedResource Include="nuget.exe" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\packages\StyleCop.Analyzers.Unstable.1.1.0.47\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
-    <Analyzer Include="..\packages\StyleCop.Analyzers.Unstable.1.1.0.47\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".analyzers\dictionary.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\Naos.Build.Analyzers.1.55.0\build\Naos.Build.Analyzers.targets" Condition="Exists('..\packages\Naos.Build.Analyzers.1.55.0\build\Naos.Build.Analyzers.targets')" />
+  <Import Project="..\packages\Naos.Build.Analyzers.1.55.17\build\Naos.Build.Analyzers.targets" Condition="Exists('..\packages\Naos.Build.Analyzers.1.55.17\build\Naos.Build.Analyzers.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Naos.Build.Analyzers.1.55.0\build\Naos.Build.Analyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Naos.Build.Analyzers.1.55.0\build\Naos.Build.Analyzers.targets'))" />
+    <Error Condition="!Exists('..\packages\Naos.Build.Analyzers.1.55.17\build\Naos.Build.Analyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Naos.Build.Analyzers.1.55.17\build\Naos.Build.Analyzers.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

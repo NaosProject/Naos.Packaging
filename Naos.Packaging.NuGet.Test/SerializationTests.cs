@@ -11,8 +11,8 @@ namespace Naos.Packaging.NuGet.Test
     using Naos.Packaging.Domain;
     using Naos.Packaging.Serialization.Bson;
     using Naos.Packaging.Serialization.Json;
-    using Naos.Serialization.Bson;
-    using Naos.Serialization.Json;
+    using OBeautifulCode.Serialization.Bson;
+    using OBeautifulCode.Serialization.Json;
     using Xunit;
 
     public static class SerializationTests
@@ -22,8 +22,8 @@ namespace Naos.Packaging.NuGet.Test
         {
             // Arrange
             var expected = default(Package);
-            var bsonSerializer = new NaosBsonSerializer<PackagingBsonConfiguration>();
-            var jsonSerializer = new NaosJsonSerializer<PackagingJsonConfiguration>();
+            var bsonSerializer = new ObcBsonSerializer<PackagingBsonConfiguration>();
+            var jsonSerializer = new ObcJsonSerializer<PackagingJsonConfiguration>();
 
             // Act
             var actualBsonString = bsonSerializer.SerializeToString(expected);
@@ -42,8 +42,8 @@ namespace Naos.Packaging.NuGet.Test
         {
             // Arrange
             var expected = new Package();
-            var bsonSerializer = new NaosBsonSerializer<PackagingBsonConfiguration>();
-            var jsonSerializer = new NaosJsonSerializer<PackagingJsonConfiguration>();
+            var bsonSerializer = new ObcBsonSerializer<PackagingBsonConfiguration>();
+            var jsonSerializer = new ObcJsonSerializer<PackagingJsonConfiguration>();
 
             // Act
             var actualBsonString = bsonSerializer.SerializeToString(expected);
@@ -62,8 +62,8 @@ namespace Naos.Packaging.NuGet.Test
         {
             // Arrange
             var expected = A.Dummy<Package>();
-            var bsonSerializer = new NaosBsonSerializer<PackagingBsonConfiguration>();
-            var jsonSerializer = new NaosJsonSerializer<PackagingJsonConfiguration>();
+            var bsonSerializer = new ObcBsonSerializer<PackagingBsonConfiguration>();
+            var jsonSerializer = new ObcJsonSerializer<PackagingJsonConfiguration>();
 
             // Act
             var actualBsonString = bsonSerializer.SerializeToString(expected);
@@ -82,7 +82,7 @@ namespace Naos.Packaging.NuGet.Test
         {
             // Arrange
             var expected = default(PackageDescription);
-            var jsonSerializer = new NaosJsonSerializer<PackagingJsonConfiguration>();
+            var jsonSerializer = new ObcJsonSerializer<PackagingJsonConfiguration>();
 
             // Act
             var actualJsonString = jsonSerializer.SerializeToString(expected);
@@ -97,8 +97,8 @@ namespace Naos.Packaging.NuGet.Test
         {
             // Arrange
             var expected = new PackageDescription();
-            var bsonSerializer = new NaosBsonSerializer<PackagingBsonConfiguration>();
-            var jsonSerializer = new NaosJsonSerializer<PackagingJsonConfiguration>();
+            var bsonSerializer = new ObcBsonSerializer<PackagingBsonConfiguration>();
+            var jsonSerializer = new ObcJsonSerializer<PackagingJsonConfiguration>();
 
             // Act
             var actualBsonString = bsonSerializer.SerializeToString(expected);
@@ -117,8 +117,8 @@ namespace Naos.Packaging.NuGet.Test
         {
             // Arrange
             var expected = A.Dummy<PackageDescription>();
-            var bsonSerializer = new NaosBsonSerializer<PackagingBsonConfiguration>();
-            var jsonSerializer = new NaosJsonSerializer<PackagingJsonConfiguration>();
+            var bsonSerializer = new ObcBsonSerializer<PackagingBsonConfiguration>();
+            var jsonSerializer = new ObcJsonSerializer<PackagingJsonConfiguration>();
 
             // Act
             var actualBsonString = bsonSerializer.SerializeToString(expected);
@@ -137,8 +137,8 @@ namespace Naos.Packaging.NuGet.Test
         {
             // Arrange
             var expected = default(PackageRepositoryConfiguration);
-            var bsonSerializer = new NaosBsonSerializer<PackagingBsonConfiguration>();
-            var jsonSerializer = new NaosJsonSerializer<PackagingJsonConfiguration>();
+            var bsonSerializer = new ObcBsonSerializer<PackagingBsonConfiguration>();
+            var jsonSerializer = new ObcJsonSerializer<PackagingJsonConfiguration>();
 
             // Act
             var actualBsonString = bsonSerializer.SerializeToString(expected);
@@ -157,8 +157,8 @@ namespace Naos.Packaging.NuGet.Test
         {
             // Arrange
             var expected = new PackageRepositoryConfiguration();
-            var bsonSerializer = new NaosBsonSerializer<PackagingBsonConfiguration>();
-            var jsonSerializer = new NaosJsonSerializer<PackagingJsonConfiguration>();
+            var bsonSerializer = new ObcBsonSerializer<PackagingBsonConfiguration>();
+            var jsonSerializer = new ObcJsonSerializer<PackagingJsonConfiguration>();
 
             // Act
             var actualBsonString = bsonSerializer.SerializeToString(expected);
@@ -177,8 +177,8 @@ namespace Naos.Packaging.NuGet.Test
         {
             // Arrange
             var expected = A.Dummy<PackageRepositoryConfiguration>();
-            var bsonSerializer = new NaosBsonSerializer<PackagingBsonConfiguration>();
-            var jsonSerializer = new NaosJsonSerializer<PackagingJsonConfiguration>();
+            var bsonSerializer = new ObcBsonSerializer<PackagingBsonConfiguration>();
+            var jsonSerializer = new ObcJsonSerializer<PackagingJsonConfiguration>();
 
             // Act
             var actualBsonString = bsonSerializer.SerializeToString(expected);

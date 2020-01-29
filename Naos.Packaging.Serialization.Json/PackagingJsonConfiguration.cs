@@ -9,7 +9,7 @@ namespace Naos.Packaging.Serialization.Json
     using System;
     using System.Collections.Generic;
     using Naos.Packaging.Domain;
-    using Naos.Serialization.Json;
+    using OBeautifulCode.Serialization.Json;
 
     /// <summary>
     /// Implementation for the <see cref="Naos.Packaging" /> domain.
