@@ -9,7 +9,7 @@ namespace Naos.Packaging.Domain
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using OBeautifulCode.Validation.Recipes;
+    using OBeautifulCode.Assertion.Recipes;
 
     /// <summary>
     /// Comparer for use when running LINQ expressions on packages to only use the package ID.

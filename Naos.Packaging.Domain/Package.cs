@@ -8,7 +8,7 @@ namespace Naos.Packaging.Domain
 {
     using System;
     using System.Linq;
-    using OBeautifulCode.Math.Recipes;
+    using OBeautifulCode.Equality.Recipes;
 
     /// <summary>
     /// A full package, description and the file bytes as of a date and time.

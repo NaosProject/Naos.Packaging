@@ -17,9 +17,8 @@ namespace Naos.Packaging.NuGet
     using System.Xml;
 
     using Naos.Packaging.Domain;
-
+    using OBeautifulCode.Assertion.Recipes;
     using OBeautifulCode.Reflection.Recipes;
-    using OBeautifulCode.Validation.Recipes;
     using Spritely.Redo;
 
     using static System.FormattableString;

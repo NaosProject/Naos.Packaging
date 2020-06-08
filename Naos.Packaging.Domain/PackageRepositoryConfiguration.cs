@@ -8,7 +8,7 @@ namespace Naos.Packaging.Domain
 {
     using System;
     using System.Collections.Generic;
-    using OBeautifulCode.Math.Recipes;
+    using OBeautifulCode.Equality.Recipes;
 
     /// <summary>
     /// Model object to provide details on the repository.

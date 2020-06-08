@@ -1,12 +1,12 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <package>
   <metadata>
     <id>Naos.Packaging.Recipes.DummyFactory</id>
     <description>A dummy factory for Packaging types.</description>
     <tags>naos packaging fakeiteasy autofixture dummy factory</tags>
     <dependencies>
-      <dependency id="Naos.Packaging.Domain" version ="$version$" />
-      <dependency id="OBeautifulCode.AutoFakeItEasy" version ="1.0.113" />
+      <dependency id="Naos.Packaging.Domain" version="$version$" />
+      <dependency id="OBeautifulCode.AutoFakeItEasy" version="1.0.127" />
     </dependencies>
   </metadata>
   <files>
