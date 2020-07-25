@@ -18,7 +18,6 @@ namespace OBeautifulCode.Reflection.Recipes
     using System.Reflection;
     using System.Runtime.CompilerServices;
 
-    using OBeautifulCode.Assertion.Recipes;
     using OBeautifulCode.Collection.Recipes;
     
     using static System.FormattableString;
@@ -45,7 +44,10 @@ namespace OBeautifulCode.Reflection.Recipes
         public static string GetCodeBaseAsPathInsteadOfUri(
             this Assembly assembly)
         {
-            new { assembly }.AsArg().Must().NotBeNull();
+            if (assembly == null)
+            {
+                throw new ArgumentNullException(nameof(assembly));
+            }
 
             var nonUriCodeBase = assembly.CodeBase.Replace(@"file:///", string.Empty).Replace('/', '\\');
             return nonUriCodeBase;
@@ -207,7 +209,15 @@ namespace OBeautifulCode.Reflection.Recipes
         public static IReadOnlyCollection<Type> GetTypesFromAssemblies(
             this IReadOnlyCollection<Assembly> assemblies)
         {
-            new { assemblies }.AsArg().Must().NotBeNull().And().NotContainAnyNullElements();
+            if (assemblies == null)
+            {
+                throw new ArgumentNullException(nameof(assemblies));
+            }
+
+            if (assemblies.Any(_ => _ == null))
+            {
+                throw new ArgumentException(Invariant($"'{nameof(assemblies)}' contains an element that is null"));
+            }
 
             try
             {
