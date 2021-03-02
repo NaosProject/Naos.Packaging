@@ -63,6 +63,15 @@
     <Reference Include="Naos.Configuration.Domain, Version=1.0.22.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Naos.Configuration.Domain.1.0.22\lib\net462\Naos.Configuration.Domain.dll</HintPath>
     </Reference>
+    <Reference Include="Naos.Protocol.Domain, Version=1.0.96.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Naos.Protocol.Domain.1.0.96\lib\net462\Naos.Protocol.Domain.dll</HintPath>
+    </Reference>
+    <Reference Include="Naos.Protocol.Serialization.Bson, Version=1.0.96.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Naos.Protocol.Serialization.Bson.1.0.96\lib\net462\Naos.Protocol.Serialization.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="Naos.Protocol.Serialization.Json, Version=1.0.96.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Naos.Protocol.Serialization.Json.1.0.96\lib\net462\Naos.Protocol.Serialization.Json.dll</HintPath>
+    </Reference>
     <Reference Include="OBeautifulCode.AutoFakeItEasy, Version=1.0.132.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OBeautifulCode.AutoFakeItEasy.1.0.132\lib\net462\OBeautifulCode.AutoFakeItEasy.dll</HintPath>
     </Reference>

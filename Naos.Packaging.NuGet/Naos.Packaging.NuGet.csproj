@@ -39,6 +39,12 @@
     <CodeAnalysisRuleSet />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Naos.Protocol.Domain, Version=1.0.96.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Naos.Protocol.Domain.1.0.96\lib\net462\Naos.Protocol.Domain.dll</HintPath>
+    </Reference>
+    <Reference Include="OBeautifulCode.Representation.System, Version=1.0.57.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OBeautifulCode.Representation.System.1.0.57\lib\net462\OBeautifulCode.Representation.System.dll</HintPath>
+    </Reference>
     <Reference Include="OBeautifulCode.Type, Version=1.0.78.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OBeautifulCode.Type.1.0.78\lib\net462\OBeautifulCode.Type.dll</HintPath>
     </Reference>
