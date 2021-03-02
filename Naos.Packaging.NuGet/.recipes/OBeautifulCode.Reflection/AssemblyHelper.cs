@@ -9,26 +9,27 @@
 
 namespace OBeautifulCode.Reflection.Recipes
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.IO.Compression;
-    using System.Linq;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
+    using global::System;
+    using global::System.Collections.Generic;
+    using global::System.Diagnostics;
+    using global::System.Diagnostics.CodeAnalysis;
+    using global::System.IO;
+    using global::System.IO.Compression;
+    using global::System.Linq;
+    using global::System.Reflection;
+    using global::System.Runtime.CompilerServices;
 
     using OBeautifulCode.Collection.Recipes;
-    
-    using static System.FormattableString;
+
+    using static global::System.FormattableString;
 
     /// <summary>
     /// Provides useful methods for extracting information from and
     /// interacting with assemblies using reflection.
     /// </summary>
-#if !OBeautifulCodeReflectionRecipesProject
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    [System.CodeDom.Compiler.GeneratedCode("OBeautifulCode.Reflection.Recipes", "See package version number")]
+#if !OBeautifulCodeReflectionSolution
+    [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [global::System.CodeDom.Compiler.GeneratedCode("OBeautifulCode.Reflection.Recipes", "See package version number")]
     internal
 #else
     public
@@ -40,7 +41,7 @@ namespace OBeautifulCode.Reflection.Recipes
         /// </summary>
         /// <param name="assembly">Assembly to extend functionality of.</param>
         /// <returns>CodeBase as real path.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings", Justification = "Correct return type.")]
+        [SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings", Justification = "Correct return type.")]
         public static string GetCodeBaseAsPathInsteadOfUri(
             this Assembly assembly)
         {
@@ -175,11 +176,11 @@ namespace OBeautifulCode.Reflection.Recipes
         /// </remarks>
         /// <returns>Returns the specified manifest resource as a string.</returns>
         /// <exception cref="ArgumentNullException">resourceName is null.</exception>
-        /// <exception cref="ArgumentException">resourceName is whitspace.</exception>
+        /// <exception cref="ArgumentException">resourceName is white space.</exception>
         /// <exception cref="InvalidOperationException">Resource was not found in the calling assembly.</exception>
         /// <exception cref="InvalidOperationException">The resource was not an embedded resource (that is, non-linked).</exception>
         /// <exception cref="NotImplementedException">Resource length is greater than Int64.MaxValue.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Objects are not being disposed multiple times.")]
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Objects are not being disposed multiple times.")]
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static string ReadEmbeddedResourceAsString(
             string resourceName,
@@ -187,11 +188,58 @@ namespace OBeautifulCode.Reflection.Recipes
             CompressionMethod decompressionMethod = CompressionMethod.None)
         {
             resourceName = ResolveResourceName(resourceName, addCallerNamespace);
+
             using (var embeddedResourceStream = OpenEmbeddedResourceStream(Assembly.GetCallingAssembly(), resourceName, decompressionMethod))
             {
                 using (var reader = new StreamReader(embeddedResourceStream))
                 {
-                    return reader.ReadToEnd();
+                    var result = reader.ReadToEnd();
+
+                    return result;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reads an embedded resource from the calling assembly and returns as a byte array.
+        /// </summary>
+        /// <param name="resourceName">Name of the resource in the calling assembly.</param>
+        /// <param name="addCallerNamespace">
+        /// Determines whether to add the namespace of the calling method to the resource name.
+        /// If false, then the resource name is used as-is.
+        /// If true, then the resource name is prepended with the fully qualified namespace of the calling method, followed by a period
+        /// (e.g. if resource name = "MyFile.txt" then it changed to something like "MyNamespace.MySubNamespace.MyFile.txt").
+        /// </param>
+        /// <param name="decompressionMethod">
+        /// The compression algorithm and/or archive file format that was used to compress the resource.
+        /// This is used to determine how the resource should be decompressed.
+        /// </param>
+        /// <returns>
+        /// Returns the specified manifest resource as a byte array.
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="resourceName"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="resourceName"/> is white space.</exception>
+        /// <exception cref="InvalidOperationException">Resource was not found in the calling assembly.</exception>
+        /// <exception cref="InvalidOperationException">The resource was not an embedded resource (that is, non-linked).</exception>
+        /// <exception cref="NotImplementedException">Resource length is greater than Int64.MaxValue.</exception>
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Objects are not being disposed multiple times.")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static byte[] ReadEmbeddedResourceAsBytes(
+            string resourceName,
+            bool addCallerNamespace = true,
+            CompressionMethod decompressionMethod = CompressionMethod.None)
+        {
+            resourceName = ResolveResourceName(resourceName, addCallerNamespace);
+
+            using (var embeddedResourceStream = OpenEmbeddedResourceStream(Assembly.GetCallingAssembly(), resourceName, decompressionMethod))
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    embeddedResourceStream.CopyTo(memoryStream);
+
+                    var result = memoryStream.ToArray();
+
+                    return result;
                 }
             }
         }

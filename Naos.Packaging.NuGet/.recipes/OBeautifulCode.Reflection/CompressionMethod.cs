@@ -12,8 +12,8 @@ namespace OBeautifulCode.Reflection.Recipes
     /// <summary>
     /// Determines the compression algorithm and/or archive file format used to compress a resource.
     /// </summary>
-#if !OBeautifulCodeReflectionRecipesProject
-    [System.CodeDom.Compiler.GeneratedCode("OBeautifulCode.Reflection.Recipes", "See package version number")]
+#if !OBeautifulCodeReflectionSolution
+    [global::System.CodeDom.Compiler.GeneratedCode("OBeautifulCode.Reflection.Recipes", "See package version number")]
     internal
 #else
     public

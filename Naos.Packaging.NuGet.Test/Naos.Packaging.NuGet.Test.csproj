@@ -60,32 +60,32 @@
     <Reference Include="MongoDB.Bson, Version=2.4.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MongoDB.Bson.2.4.4\lib\net45\MongoDB.Bson.dll</HintPath>
     </Reference>
-    <Reference Include="Naos.Configuration.Domain, Version=1.0.18.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Naos.Configuration.Domain.1.0.18\lib\net462\Naos.Configuration.Domain.dll</HintPath>
+    <Reference Include="Naos.Configuration.Domain, Version=1.0.22.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Naos.Configuration.Domain.1.0.22\lib\net462\Naos.Configuration.Domain.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="OBeautifulCode.AutoFakeItEasy, Version=1.0.132.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OBeautifulCode.AutoFakeItEasy.1.0.132\lib\net462\OBeautifulCode.AutoFakeItEasy.dll</HintPath>
     </Reference>
-    <Reference Include="OBeautifulCode.AutoFakeItEasy, Version=1.0.127.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OBeautifulCode.AutoFakeItEasy.1.0.127\lib\net462\OBeautifulCode.AutoFakeItEasy.dll</HintPath>
+    <Reference Include="OBeautifulCode.Compression, Version=1.0.20.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OBeautifulCode.Compression.1.0.20\lib\net462\OBeautifulCode.Compression.dll</HintPath>
     </Reference>
-    <Reference Include="OBeautifulCode.Compression, Version=1.0.16.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OBeautifulCode.Compression.1.0.16\lib\net462\OBeautifulCode.Compression.dll</HintPath>
+    <Reference Include="OBeautifulCode.Representation.System, Version=1.0.57.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OBeautifulCode.Representation.System.1.0.57\lib\net462\OBeautifulCode.Representation.System.dll</HintPath>
     </Reference>
-    <Reference Include="OBeautifulCode.Representation.System, Version=1.0.52.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OBeautifulCode.Representation.System.1.0.52\lib\net462\OBeautifulCode.Representation.System.dll</HintPath>
+    <Reference Include="OBeautifulCode.Serialization, Version=1.0.104.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OBeautifulCode.Serialization.1.0.104\lib\net462\OBeautifulCode.Serialization.dll</HintPath>
     </Reference>
-    <Reference Include="OBeautifulCode.Serialization, Version=1.0.63.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OBeautifulCode.Serialization.1.0.63\lib\net462\OBeautifulCode.Serialization.dll</HintPath>
+    <Reference Include="OBeautifulCode.Serialization.Bson, Version=1.0.104.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OBeautifulCode.Serialization.Bson.1.0.104\lib\net462\OBeautifulCode.Serialization.Bson.dll</HintPath>
     </Reference>
-    <Reference Include="OBeautifulCode.Serialization.Bson, Version=1.0.63.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OBeautifulCode.Serialization.Bson.1.0.63\lib\net462\OBeautifulCode.Serialization.Bson.dll</HintPath>
+    <Reference Include="OBeautifulCode.Serialization.Json, Version=1.0.104.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OBeautifulCode.Serialization.Json.1.0.104\lib\net462\OBeautifulCode.Serialization.Json.dll</HintPath>
     </Reference>
-    <Reference Include="OBeautifulCode.Serialization.Json, Version=1.0.63.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OBeautifulCode.Serialization.Json.1.0.63\lib\net462\OBeautifulCode.Serialization.Json.dll</HintPath>
+    <Reference Include="OBeautifulCode.Serialization.PropertyBag, Version=1.0.104.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OBeautifulCode.Serialization.PropertyBag.1.0.104\lib\net462\OBeautifulCode.Serialization.PropertyBag.dll</HintPath>
     </Reference>
-    <Reference Include="OBeautifulCode.Type, Version=1.0.51.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OBeautifulCode.Type.1.0.51\lib\net462\OBeautifulCode.Type.dll</HintPath>
+    <Reference Include="OBeautifulCode.Type, Version=1.0.78.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OBeautifulCode.Type.1.0.78\lib\net462\OBeautifulCode.Type.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -111,8 +111,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include=".analyzers\SuppressBecause.cs" />
     <Compile Include=".recipes\Naos.Bootstrapper\ConfigRequiredTest.cs" />
+    <Compile Include=".recipes\Naos.CodeAnalysis\NaosSuppressBecause.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\Actions.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\ApplyBecause.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\AssertionKind.cs" />
@@ -122,7 +122,6 @@
     <Compile Include=".recipes\OBeautifulCode.Assertion\Delegates.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\ImproperUseOfAssertionFrameworkException.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\Range.cs" />
-    <Compile Include=".recipes\OBeautifulCode.Assertion\SuppressBecause.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\TestAssertionVerificationFailedException.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\TypeValidation.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\ValidatedNotNullAttribute.cs" />
@@ -137,8 +136,11 @@
     <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.Workflow.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\WorkflowExtensions.cs" />
     <Compile Include=".recipes\OBeautifulCode.AutoFakeItEasy\AutoFakeItEasyBootstrapper.cs" />
+    <Compile Include=".recipes\OBeautifulCode.CodeAnalysis\ObcSuppressBecause.cs" />
     <Compile Include=".recipes\OBeautifulCode.Collection\EnumerableExtensions.cs" />
-    <Compile Include=".recipes\OBeautifulCode.Collection\SuppressBecause.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Compression\CompressorFactory.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Compression\DotNetZipCompressor.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Compression\NullCompressor.cs" />
     <Compile Include=".recipes\OBeautifulCode.Equality\DateTimeEqualityComparer.cs" />
     <Compile Include=".recipes\OBeautifulCode.Equality\DictionaryEqualityComparer.cs" />
     <Compile Include=".recipes\OBeautifulCode.Equality\EnumerableEqualityComparer.cs" />
@@ -147,15 +149,25 @@
     <Compile Include=".recipes\OBeautifulCode.Equality\EqualityExtensions.cs" />
     <Compile Include=".recipes\OBeautifulCode.Equality\HashCodeHelper.cs" />
     <Compile Include=".recipes\OBeautifulCode.Equality\ReadOnlyDictionaryEqualityComparer.cs" />
-    <Compile Include=".recipes\OBeautifulCode.Equality\SuppressBecause.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Math\ThreadSafeRandom.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Reflection\AppDomainHelper.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Reflection\DisposableAppDomain.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Serialization\AppDomainScenarios.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Serialization\FactoryExtensions.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Serialization\RoundtripSerializationExtensions.Bson.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Serialization\RoundtripSerializationExtensions.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Serialization\RoundtripSerializationExtensions.Json.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Serialization\RoundtripSerializationExtensions.PropertyBag.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Serialization\SerializerFactory.cs" />
     <Compile Include=".recipes\OBeautifulCode.String\StringExtensions.cs" />
-    <Compile Include=".recipes\OBeautifulCode.String\SuppressBecause.cs" />
     <Compile Include=".recipes\OBeautifulCode.Type\ArrayKind.cs" />
-    <Compile Include=".recipes\OBeautifulCode.Type\SuppressBecause.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Type\DeepCloneExtensions.cs" />
     <Compile Include=".recipes\OBeautifulCode.Type\ToStringReadableOptions.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Type\ToStringXmlDocOptions.cs" />
     <Compile Include=".recipes\OBeautifulCode.Type\TypeExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackagingDummyFactory.cs" />
+    <Compile Include="Properties\ProjectInfo.cs" />
     <Compile Include="SerializationTests.cs" />
     <Compile Include="PackageRetrieverTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -200,10 +212,10 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\xunit.core.2.4.1\build\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.core.2.4.1\build\xunit.core.props'))" />
     <Error Condition="!Exists('..\packages\xunit.core.2.4.1\build\xunit.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.core.2.4.1\build\xunit.core.targets'))" />
-    <Error Condition="!Exists('..\packages\Naos.Build.Analyzers.1.55.31\build\Naos.Build.Analyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Naos.Build.Analyzers.1.55.31\build\Naos.Build.Analyzers.targets'))" />
+    <Error Condition="!Exists('..\packages\Naos.Build.Analyzers.1.55.51\build\Naos.Build.Analyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Naos.Build.Analyzers.1.55.51\build\Naos.Build.Analyzers.targets'))" />
   </Target>
   <Import Project="..\packages\xunit.core.2.4.1\build\xunit.core.targets" Condition="Exists('..\packages\xunit.core.2.4.1\build\xunit.core.targets')" />
-  <Import Project="..\packages\Naos.Build.Analyzers.1.55.31\build\Naos.Build.Analyzers.targets" Condition="Exists('..\packages\Naos.Build.Analyzers.1.55.31\build\Naos.Build.Analyzers.targets')" />
+  <Import Project="..\packages\Naos.Build.Analyzers.1.55.51\build\Naos.Build.Analyzers.targets" Condition="Exists('..\packages\Naos.Build.Analyzers.1.55.51\build\Naos.Build.Analyzers.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
