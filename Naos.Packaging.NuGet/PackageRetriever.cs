@@ -14,6 +14,7 @@ namespace Naos.Packaging.NuGet
     using System.IO.Compression;
     using System.Linq;
     using System.Text;
+    using System.Text.RegularExpressions;
     using System.Xml;
 
     using Naos.Packaging.Domain;
@@ -322,86 +323,50 @@ namespace Naos.Packaging.NuGet
             string packageRepositorySourceName = null,
             ConflictingLatestVersionStrategy conflictingLatestVersionStrategy = ConflictingLatestVersionStrategy.UseHighestVersion)
         {
-            if (string.IsNullOrWhiteSpace(packageId))
+            var packageDescriptionUsingListApi = this.GetLatestVersionUsingListApi(packageId, includePrerelease, includeDelisted, packageRepositorySourceName, conflictingLatestVersionStrategy);
+
+            var packageDescriptionUsingSearchApi = this.GetLatestVersionUsingSearchApi(packageId, includePrerelease, includeDelisted, packageRepositorySourceName, conflictingLatestVersionStrategy);
+
+            PackageDescription result;
+
+            if ((packageDescriptionUsingListApi != null) && (packageDescriptionUsingSearchApi != null))
             {
-                throw new ArgumentException("packageId cannot be null nor whitespace.");
-            }
+                var listVersion = GetVersion(packageDescriptionUsingListApi.Version);
+                var searchVersion = GetVersion(packageDescriptionUsingSearchApi.Version);
 
-            var arguments = Invariant($"list {packageId}");
-            if (includePrerelease)
-            {
-                arguments = Invariant($"{arguments} -prerelease");
-            }
-
-            if (includeDelisted)
-            {
-                arguments = Invariant($"{arguments} -includedelisted");
-            }
-
-            var sourceArgument = this.BuildSourceUrlArgumentFromSourceName(packageRepositorySourceName);
-            arguments = Invariant($"{arguments} {sourceArgument}");
-
-            this.consoleOutputCallback?.Invoke(Invariant($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list latest package for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}"));
-            var output = this.RunNugetCommandLine(arguments);
-            this.consoleOutputCallback?.Invoke(Invariant($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}"));
-            var outputLines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-
-            /* parse output.  output should look like this (the first line may or may not appear):
-            Using credentials from config.UserName: user@domain.com
-            AcklenAvenue.Queueing.Serializers.JsonNet 1.0.1.39
-            CacheManager.Serialization.Json 0.8.0
-            com.egis.hue.sdk 1.0.0.2
-            Common.Serializer.NewtonsoftJson 0.2.0-pre
-            */
-
-            PackageDescription result = null;
-            foreach (var outputLine in outputLines)
-            {
-                if (outputLine.StartsWith("Using credentials from config", StringComparison.OrdinalIgnoreCase))
+                if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.ThrowException)
                 {
-                    continue;
+                    if (listVersion != searchVersion)
+                    {
+                        throw new InvalidOperationException(
+                            Invariant($"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {listVersion} and {searchVersion}"));
+                    }
+
+                    result = packageDescriptionUsingListApi;
                 }
-
-                var tokens = outputLine.Split(' ');
-                var id = tokens[0];
-
-                if (tokens[0].Equals(packageId, StringComparison.OrdinalIgnoreCase))
+                else if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.UseHighestVersion)
                 {
-                    var version = tokens[1].Trim();
-
-                    if (result == null)
-                    {
-                        result = new PackageDescription { Id = id, Version = version };
-                    }
-                    else
-                    {
-                        if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.ThrowException)
-                        {
-                            throw new InvalidOperationException(
-                                Invariant($"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {result.Version} and {version}"));
-                        }
-                        else if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.UseHighestVersion)
-                        {
-                            var version1 = new Version(result.Version.Split(new[] { "-" }, StringSplitOptions.RemoveEmptyEntries).First());
-                            var version2 = new Version(version.Split(new[] { "-" }, StringSplitOptions.RemoveEmptyEntries).First());
-
-                            if (version1 == version2)
-                            {
-                                throw new NotSupportedException(
-                                    Invariant($"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {result.Version} and {version}.  These two versions have the same Major.Minor.Patch version (e.g. 1.2.3).  Comparing [-Suffix] (e.g. 1.2.3-beta1, 1.2.3-beta2) is not supported."));
-                            }
-                            else if (version2 > version1)
-                            {
-                                result = new PackageDescription { Id = id, Version = version };
-                            }
-                        }
-                        else
-                        {
-                            throw new NotSupportedException(
-                                Invariant($"This {nameof(ConflictingLatestVersionStrategy)} is not supported: {conflictingLatestVersionStrategy}"));
-                        }
-                    }
+                    result = listVersion > searchVersion
+                        ? packageDescriptionUsingListApi
+                        : packageDescriptionUsingSearchApi;
                 }
+                else
+                {
+                    throw new NotSupportedException(
+                        Invariant($"This {nameof(ConflictingLatestVersionStrategy)} is not supported: {conflictingLatestVersionStrategy}"));
+                }
+            }
+            else if (packageDescriptionUsingListApi != null)
+            {
+                result = packageDescriptionUsingListApi;
+            }
+            else if (packageDescriptionUsingSearchApi != null)
+            {
+                result = packageDescriptionUsingSearchApi;
+            }
+            else
+            {
+                result = null;
             }
 
             return result;
@@ -652,13 +617,8 @@ namespace Naos.Packaging.NuGet
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "nuget", Justification = "Spelling/name is correct.")]
         private string RunNugetCommandLine(
             string arguments,
-            bool appendConfigFileArgument = true)
+            bool appendConfigFileArgument = false)
         {
-            if (appendConfigFileArgument)
-            {
-                arguments = Invariant($"{arguments} -configfile \"{this.nugetConfigFilePath}\"");
-            }
-
             arguments = Invariant($"{arguments} -noninteractive");
 
             var process = new Process
@@ -707,6 +667,14 @@ namespace Naos.Packaging.NuGet
             return result;
         }
 
+        private static Version GetVersion(
+            string version)
+        {
+            var result = new Version(version.Split(new[] { "-" }, StringSplitOptions.RemoveEmptyEntries).First());
+
+            return result;
+        }
+
         private string SetupNugetExe(string nugetExeFilePathOverride)
         {
             var result = nugetExeFilePathOverride;
@@ -746,6 +714,180 @@ namespace Naos.Packaging.NuGet
                 }
 
                 result = Invariant($"-source \"{packageRepository.Source}\"");
+            }
+
+            return result;
+        }
+
+        private IReadOnlyCollection<string> ExecutePackageSearch(
+            string packageId,
+            string api,
+            bool includePrerelease,
+            bool includeDelisted,
+            string packageRepositorySourceName)
+        {
+            if (string.IsNullOrWhiteSpace(packageId))
+            {
+                throw new ArgumentException("packageId cannot be null nor whitespace.");
+            }
+
+            var arguments = Invariant($"{api} {packageId}");
+            if (includePrerelease)
+            {
+                arguments = Invariant($"{arguments} -prerelease");
+            }
+
+            if (includeDelisted)
+            {
+                arguments = Invariant($"{arguments} -includedelisted");
+            }
+
+            var sourceArgument = this.BuildSourceUrlArgumentFromSourceName(packageRepositorySourceName);
+            arguments = Invariant($"{arguments} {sourceArgument}");
+
+            this.consoleOutputCallback?.Invoke(Invariant($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list latest package for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}"));
+            var output = this.RunNugetCommandLine(arguments);
+
+            this.consoleOutputCallback?.Invoke(Invariant($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}"));
+            var result = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+
+            return result;
+        }
+
+        private PackageDescription GetLatestVersionUsingListApi(
+            string packageId,
+            bool includePrerelease,
+            bool includeDelisted,
+            string packageRepositorySourceName,
+            ConflictingLatestVersionStrategy conflictingLatestVersionStrategy)
+        {
+            var outputLines = this.ExecutePackageSearch(packageId, "list", includePrerelease, includeDelisted, packageRepositorySourceName);
+
+            /* parse output.  output should look like this (the first line may or may not appear):
+            Using credentials from config.UserName: user@domain.com
+            AcklenAvenue.Queueing.Serializers.JsonNet 1.0.1.39
+            CacheManager.Serialization.Json 0.8.0
+            com.egis.hue.sdk 1.0.0.2
+            Common.Serializer.NewtonsoftJson 0.2.0-pre
+            */
+
+            PackageDescription result = null;
+            foreach (var outputLine in outputLines)
+            {
+                if (outputLine.StartsWith("Using credentials from config", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // some nuget gallery servers don't support the list API
+                if (outputLine.StartsWith("WARNING: This version of nuget.exe does not support listing packages", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var tokens = outputLine.Split(' ');
+                var foundPackageId = tokens[0];
+
+                if (foundPackageId.Equals(packageId, StringComparison.OrdinalIgnoreCase))
+                {
+                    var foundVersion = tokens[1].Trim();
+
+                    if (result == null)
+                    {
+                        result = new PackageDescription { Id = packageId, Version = foundVersion };
+                    }
+                    else
+                    {
+                        if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.ThrowException)
+                        {
+                            throw new InvalidOperationException(
+                                Invariant($"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {result.Version} and {foundVersion}"));
+                        }
+                        else if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.UseHighestVersion)
+                        {
+                            var version1 = GetVersion(result.Version);
+                            var version2 = GetVersion(foundVersion);
+
+                            if (version1 == version2)
+                            {
+                                throw new NotSupportedException(
+                                    Invariant($"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {result.Version} and {foundVersion}.  These two versions have the same Major.Minor.Patch version (e.g. 1.2.3).  Comparing [-Suffix] (e.g. 1.2.3-beta1, 1.2.3-beta2) is not supported."));
+                            }
+                            else if (version2 > version1)
+                            {
+                                result = new PackageDescription { Id = packageId, Version = foundVersion };
+                            }
+                        }
+                        else
+                        {
+                            throw new NotSupportedException(
+                                Invariant($"This {nameof(ConflictingLatestVersionStrategy)} is not supported: {conflictingLatestVersionStrategy}"));
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private PackageDescription GetLatestVersionUsingSearchApi(
+            string packageId,
+            bool includePrerelease,
+            bool includeDelisted,
+            string packageRepositorySourceName,
+            ConflictingLatestVersionStrategy conflictingLatestVersionStrategy)
+        {
+            var outputLines = this.ExecutePackageSearch(packageId, "search", includePrerelease, includeDelisted, packageRepositorySourceName);
+
+            var regex = new Regex("^> (.*?) \\| (.*?) \\| Downloads.*?$", RegexOptions.Compiled);
+
+            PackageDescription result = null;
+            foreach (var outputLine in outputLines)
+            {
+                var match = regex.Match(outputLine);
+
+                if ((match.Groups.Count == 3) && (!string.IsNullOrWhiteSpace(match.Groups[1].Value)) && (!string.IsNullOrWhiteSpace(match.Groups[2].Value)))
+                {
+                    var foundPackageId = match.Groups[1].Value;
+                    var foundVersion = match.Groups[2].Value;
+
+                    if (foundPackageId.Equals(packageId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var packageDescription = new PackageDescription { Id = packageId, Version = foundVersion };
+
+                        if (result == null)
+                        {
+                            result = packageDescription;
+
+                            continue;
+                        }
+
+                        var version1 = GetVersion(result.Version);
+
+                        var version2 = GetVersion(foundVersion);
+
+                        if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.ThrowException)
+                        {
+                            if (version1 != version2)
+                            {
+                                throw new InvalidOperationException(
+                                    Invariant($"The latest version of package {packageId} is different in multiple galleries and {nameof(ConflictingLatestVersionStrategy)} is {nameof(ConflictingLatestVersionStrategy.ThrowException)}.  Versions found: {result.Version} and {foundVersion}"));
+                            }
+                        }
+                        else if (conflictingLatestVersionStrategy == ConflictingLatestVersionStrategy.UseHighestVersion)
+                        {
+                            if (version2 > version1)
+                            {
+                                result = packageDescription;
+                            }
+                        }
+                        else
+                        {
+                            throw new NotSupportedException(
+                                Invariant($"This {nameof(ConflictingLatestVersionStrategy)} is not supported: {conflictingLatestVersionStrategy}"));
+                        }
+                    }
+                }
             }
 
             return result;
