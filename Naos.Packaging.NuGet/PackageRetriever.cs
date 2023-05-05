@@ -81,6 +81,27 @@ namespace Naos.Packaging.NuGet
 
             this.consoleOutputCallback = consoleOutputCallback;
 
+            var nugetConfigFilePath = GetNugetConfigFilePath();
+
+            IReadOnlyList<PackageRepositoryConfiguration> existingRepoConfigs = new List<PackageRepositoryConfiguration>();
+
+            if (File.Exists(nugetConfigFilePath))
+            {
+                existingRepoConfigs = GetPackageRepositoryConfigurations(nugetConfigFilePath);
+            }
+
+            foreach (var repoConfig in repoConfigs)
+            {
+                if (!existingRepoConfigs.Any(_ => _.Source.ToUpperInvariant().Trim() == repoConfig.Source.ToUpperInvariant().Trim()))
+                {
+                    this.consoleOutputCallback?.Invoke(Invariant($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to add source '{repoConfig.SourceName}'{Environment.NewLine}"));
+
+                    var sourceAdditionOutput = this.RunNugetCommandLine(Invariant($"Sources Add -Name {repoConfig.SourceName} -Source {repoConfig.Source} -UserName {repoConfig.UserName} -Password {repoConfig.ClearTextPassword}"));
+
+                    this.consoleOutputCallback?.Invoke(Invariant($"{DateTime.UtcNow}: {sourceAdditionOutput}"));
+                }
+            }
+
             this.packageRepositoryConfigurations = repoConfigs;
         }
 
@@ -88,13 +109,11 @@ namespace Naos.Packaging.NuGet
         /// Initializes a new instance of the <see cref="PackageRetriever"/> class.
         /// </summary>
         /// <param name="defaultWorkingDirectory">Working directory to download temporary files to.</param>
-        /// <param name="nugetConfigFilePath">Path a nuget config xml file.</param>
         /// <param name="nugetExeFilePath">Optional.  Path to nuget.exe. If null then an embedded copy of nuget.exe will be used.</param>
         /// <param name="consoleOutputCallback">Optional.  If specified, then console output will be written to this action.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "nuget", Justification = "Spelling/name is correct.")]
         public PackageRetriever(
             string defaultWorkingDirectory,
-            string nugetConfigFilePath,
             string nugetExeFilePath = null,
             Action<string> consoleOutputCallback = null)
         {
@@ -102,19 +121,35 @@ namespace Naos.Packaging.NuGet
 
             this.tempDirectory = SetupTempWorkingDirectory(defaultWorkingDirectory);
 
-            if (!File.Exists(nugetConfigFilePath))
-            {
-                throw new ArgumentException(Invariant($"{nameof(nugetConfigFilePath)} does not exist on disk."));
-            }
+            var nugetConfigFilePath = GetNugetConfigFilePath();
 
             this.nugetExeFilePath = this.SetupNugetExe(nugetExeFilePath);
 
             this.consoleOutputCallback = consoleOutputCallback;
 
-            var repoConfigs = new List<PackageRepositoryConfiguration>();
+            this.packageRepositoryConfigurations = GetPackageRepositoryConfigurations(nugetConfigFilePath);
+        }
+
+        /// <summary>
+        /// Gets the package repository configurations from a NuGet.config file.
+        /// </summary>
+        /// <param name="nugetConfigFilePath">The NuGet config file path.</param>
+        /// <returns>
+        /// The repository configurations.
+        /// </returns>
+        public static IReadOnlyList<PackageRepositoryConfiguration> GetPackageRepositoryConfigurations(
+            string nugetConfigFilePath)
+        {
+            if (!File.Exists(nugetConfigFilePath))
+            {
+                throw new ArgumentException(Invariant($"There is no NuGet config file here: {nameof(nugetConfigFilePath)}"));
+            }
+
+            var result = new List<PackageRepositoryConfiguration>();
+
             try
             {
-                var nugetConfigFileContents = File.ReadAllText(this.nugetConfigFilePath);
+                var nugetConfigFileContents = File.ReadAllText(nugetConfigFilePath);
 
                 var xmlDoc = new XmlDocument();
                 xmlDoc.LoadXml(nugetConfigFileContents);
@@ -157,7 +192,7 @@ namespace Naos.Packaging.NuGet
                         ProtocolVersion = protocolVersion,
                     };
 
-                    repoConfigs.Add(repoConfig);
+                    result.Add(repoConfig);
                 }
             }
             catch (Exception ex)
@@ -165,7 +200,47 @@ namespace Naos.Packaging.NuGet
                 throw new ArgumentException(Invariant($"Could not parse {nameof(nugetConfigFilePath)}"), ex);
             }
 
-            this.packageRepositoryConfigurations = repoConfigs;
+            return result;
+        }
+
+        /// <summary>
+        /// Builds a NuGet config file.
+        /// </summary>
+        /// <param name="repoConfigs">The repository configurations.</param>
+        /// <returns>
+        /// The NuGet config XML file.
+        /// </returns>
+        public static string BuildNugetConfigFile(
+            IReadOnlyList<PackageRepositoryConfiguration> repoConfigs)
+        {
+            var packageSource = string.Empty;
+            var packageSourceCredentials = string.Empty;
+
+            foreach (var repoConfig in repoConfigs)
+            {
+                packageSource = Invariant($@"{packageSource}{Environment.NewLine}<add key=""{repoConfig.SourceName}"" value=""{repoConfig.Source}"" />");
+                if (!string.IsNullOrWhiteSpace(repoConfig.UserName) ||
+                    (!string.IsNullOrWhiteSpace(repoConfig.ClearTextPassword)))
+                {
+                    packageSourceCredentials = Invariant($@"{packageSourceCredentials}
+                                                  <packageSourceCredentials>
+                                                    <{repoConfig.SourceName}>
+                                                      <add key=""Username"" value=""{repoConfig.UserName}"" />
+                                                      <add key=""ClearTextPassword"" value=""{repoConfig.ClearTextPassword}"" />
+                                                    </{repoConfig.SourceName}>
+                                                  </packageSourceCredentials>");
+                }
+            }
+
+            var result = Invariant($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                                   <configuration>
+                                     <packageSources>
+                                       {packageSource}
+                                     </packageSources>
+                                     {packageSourceCredentials}
+                                   </configuration>");
+
+            return result;
         }
 
         /// <inheritdoc />
@@ -411,7 +486,7 @@ namespace Naos.Packaging.NuGet
             // if the version of the package has been unlisted, then no error occurs
             // if the version of the package has never existed, then we get a 404 error
             // if the package name has never existed, then we get a 404 error
-            var output = this.RunNugetCommandLine(arguments, appendConfigFileArgument: false);
+            var output = this.RunNugetCommandLine(arguments);
             this.consoleOutputCallback?.Invoke(Invariant($"{output}{Environment.NewLine}{DateTime.UtcNow}: Run nuget.exe completed{Environment.NewLine}"));
         }
 
@@ -582,8 +657,7 @@ namespace Naos.Packaging.NuGet
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It is managed.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "nuget", Justification = "Spelling/name is correct.")]
         private string RunNugetCommandLine(
-            string arguments,
-            bool appendConfigFileArgument = false)
+            string arguments)
         {
             arguments = Invariant($"{arguments} -noninteractive");
 
@@ -621,7 +695,8 @@ namespace Naos.Packaging.NuGet
             }
         }
 
-        private static string SetupTempWorkingDirectory(string workingDirectory)
+        private static string SetupTempWorkingDirectory(
+            string workingDirectory)
         {
             if (!Directory.Exists(workingDirectory))
             {
@@ -633,6 +708,16 @@ namespace Naos.Packaging.NuGet
             return result;
         }
 
+        private static string GetNugetConfigFilePath()
+        {
+            var result = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "NuGet",
+                "NuGet.config");
+
+            return result;
+        }
+
         private static Version GetVersion(
             string version)
         {
@@ -641,7 +726,8 @@ namespace Naos.Packaging.NuGet
             return result;
         }
 
-        private string SetupNugetExe(string nugetExeFilePathOverride)
+        private string SetupNugetExe(
+            string nugetExeFilePathOverride)
         {
             var result = nugetExeFilePathOverride;
             if (result == null)
