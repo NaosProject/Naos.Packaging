@@ -38,13 +38,6 @@ namespace Naos.Packaging.Domain
         };
 
         /// <summary>
-        /// Gets the package repository configurations for the nuget public gallery.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Nuget", Justification = "Spelling/name is correct.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Configs", Justification = "Spelling/name is correct.")]
-        public static IReadOnlyCollection<PackageRepositoryConfiguration> AllNugetOrgConfigs => new[] { NugetOrgV2, NugetOrgV3 };
-
-        /// <summary>
         /// Gets or sets the source.
         /// </summary>
         public string Source { get; set; }

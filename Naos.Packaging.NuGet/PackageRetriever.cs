@@ -96,7 +96,16 @@ namespace Naos.Packaging.NuGet
                 {
                     this.consoleOutputCallback?.Invoke(Invariant($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to add source '{repoConfig.SourceName}'{Environment.NewLine}"));
 
-                    var sourceAdditionOutput = this.RunNugetCommandLine(Invariant($"Sources Add -Name {repoConfig.SourceName} -Source {repoConfig.Source} -UserName {repoConfig.UserName} -Password {repoConfig.ClearTextPassword}"));
+                    string sourceAdditionOutput;
+
+                    if (string.IsNullOrWhiteSpace(repoConfig.UserName) && string.IsNullOrWhiteSpace(repoConfig.ClearTextPassword))
+                    {
+                        sourceAdditionOutput = this.RunNugetCommandLine(Invariant($"Sources Add -Name {repoConfig.SourceName} -Source {repoConfig.Source}"));
+                    }
+                    else
+                    {
+                        sourceAdditionOutput = this.RunNugetCommandLine(Invariant($"Sources Add -Name {repoConfig.SourceName} -Source {repoConfig.Source} -UserName {repoConfig.UserName} -Password {repoConfig.ClearTextPassword}"));
+                    }
 
                     this.consoleOutputCallback?.Invoke(Invariant($"{DateTime.UtcNow}: {sourceAdditionOutput}"));
                 }
