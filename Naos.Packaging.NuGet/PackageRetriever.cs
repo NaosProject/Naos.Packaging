@@ -37,8 +37,6 @@ namespace Naos.Packaging.NuGet
 
         private readonly string tempDirectory;
 
-        private readonly string nugetConfigFilePath;
-
         private readonly string nugetExeFilePath;
 
         private readonly Action<string> consoleOutputCallback;
@@ -83,36 +81,6 @@ namespace Naos.Packaging.NuGet
 
             this.consoleOutputCallback = consoleOutputCallback;
 
-            var configFilePath = Path.Combine(this.tempDirectory, "NuGet.config");
-            var packageSource = string.Empty;
-            var packageSourceCredentials = string.Empty;
-
-            foreach (var repoConfig in repoConfigs)
-            {
-                packageSource = Invariant($@"{packageSource}{Environment.NewLine}<add key=""{repoConfig.SourceName}"" value=""{repoConfig.Source}"" />");
-                if (!string.IsNullOrWhiteSpace(repoConfig.UserName) ||
-                    (!string.IsNullOrWhiteSpace(repoConfig.ClearTextPassword)))
-                {
-                    packageSourceCredentials = Invariant($@"{packageSourceCredentials}
-                                                  <packageSourceCredentials>
-                                                    <{repoConfig.SourceName}>
-                                                      <add key=""Username"" value=""{repoConfig.UserName}"" />
-                                                      <add key=""ClearTextPassword"" value=""{repoConfig.ClearTextPassword}"" />
-                                                    </{repoConfig.SourceName}>
-                                                  </packageSourceCredentials>");
-                }
-            }
-
-            var configXml = Invariant($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                                   <configuration>
-                                     <packageSources>
-                                       {packageSource}
-                                     </packageSources>
-                                     {packageSourceCredentials}
-                                   </configuration>");
-
-            File.WriteAllText(configFilePath, configXml, Encoding.UTF8);
-            this.nugetConfigFilePath = configFilePath;
             this.packageRepositoryConfigurations = repoConfigs;
         }
 
@@ -138,8 +106,6 @@ namespace Naos.Packaging.NuGet
             {
                 throw new ArgumentException(Invariant($"{nameof(nugetConfigFilePath)} does not exist on disk."));
             }
-
-            this.nugetConfigFilePath = nugetConfigFilePath;
 
             this.nugetExeFilePath = this.SetupNugetExe(nugetExeFilePath);
 
@@ -742,8 +708,12 @@ namespace Naos.Packaging.NuGet
                 arguments = Invariant($"{arguments} -includedelisted");
             }
 
-            var sourceArgument = this.BuildSourceUrlArgumentFromSourceName(packageRepositorySourceName);
-            arguments = Invariant($"{arguments} {sourceArgument}");
+            if (!string.IsNullOrWhiteSpace(packageRepositorySourceName))
+            {
+                var sourceArgument = this.BuildSourceUrlArgumentFromSourceName(packageRepositorySourceName);
+
+                arguments = Invariant($"{arguments} {sourceArgument}");
+            }
 
             this.consoleOutputCallback?.Invoke(Invariant($"{DateTime.UtcNow}: Run nuget.exe ({this.nugetExeFilePath}) to list latest package for packageId '{packageId}', using the following arguments{Environment.NewLine}{arguments}{Environment.NewLine}"));
             var output = this.RunNugetCommandLine(arguments);
