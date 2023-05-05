@@ -31,24 +31,6 @@ namespace Naos.Packaging.Domain
         public string Version { get; set; }
 
         /// <summary>
-        /// Gets the package description as a string in form: [ID].[Version].
-        /// </summary>
-        /// <returns>String version of package description in form: [ID].[Version].</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Want a method.")]
-        public string GetIdDotVersionString()
-        {
-            var ret = Invariant($"{this.Id}.{(string.IsNullOrEmpty(this.Version) ? "[UnspecifiedVersion]" : this.Version)}");
-            return ret;
-        }
-
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            var result = this.GetIdDotVersionString();
-            return result;
-        }
-
-        /// <summary>
         /// Equality operator.
         /// </summary>
         /// <param name="first">First parameter.</param>
@@ -76,6 +58,24 @@ namespace Naos.Packaging.Domain
         /// <param name="second">Second parameter.</param>
         /// <returns>A value indicating whether or not the two items are inequal.</returns>
         public static bool operator !=(PackageDescription first, PackageDescription second) => !(first == second);
+
+        /// <summary>
+        /// Gets the package description as a string in form: [ID].[Version].
+        /// </summary>
+        /// <returns>String version of package description in form: [ID].[Version].</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Want a method.")]
+        public string GetIdDotVersionString()
+        {
+            var ret = Invariant($"{this.Id}.{(string.IsNullOrEmpty(this.Version) ? "[UnspecifiedVersion]" : this.Version)}");
+            return ret;
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            var result = this.GetIdDotVersionString();
+            return result;
+        }
 
         /// <inheritdoc />
         public bool Equals(PackageDescription other) => this == other;

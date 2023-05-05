@@ -70,6 +70,7 @@
     <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.Helpers.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.Internal.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.Strings.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.Throw.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.TypeValidation.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\Verifications.Workflow.cs" />
     <Compile Include=".recipes\OBeautifulCode.Assertion\WorkflowExtensions.cs" />

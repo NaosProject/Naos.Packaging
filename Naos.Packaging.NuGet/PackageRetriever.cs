@@ -109,12 +109,12 @@ namespace Naos.Packaging.NuGet
         /// Initializes a new instance of the <see cref="PackageRetriever"/> class.
         /// </summary>
         /// <param name="defaultWorkingDirectory">Working directory to download temporary files to.</param>
-        /// <param name="nugetExeFilePath">Optional.  Path to nuget.exe. If null then an embedded copy of nuget.exe will be used.</param>
+        /// <param name="nugetExeFilePathOverride">Optional.  Path to nuget.exe. If null then an embedded copy of nuget.exe will be used.</param>
         /// <param name="consoleOutputCallback">Optional.  If specified, then console output will be written to this action.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "nuget", Justification = "Spelling/name is correct.")]
         public PackageRetriever(
             string defaultWorkingDirectory,
-            string nugetExeFilePath = null,
+            string nugetExeFilePathOverride = null,
             Action<string> consoleOutputCallback = null)
         {
             this.defaultWorkingDirectory = defaultWorkingDirectory;
@@ -123,7 +123,7 @@ namespace Naos.Packaging.NuGet
 
             var nugetConfigFilePath = GetNugetConfigFilePath();
 
-            this.nugetExeFilePath = this.SetupNugetExe(nugetExeFilePath);
+            this.nugetExeFilePath = this.SetupNugetExe(nugetExeFilePathOverride);
 
             this.consoleOutputCallback = consoleOutputCallback;
 
@@ -137,6 +137,7 @@ namespace Naos.Packaging.NuGet
         /// <returns>
         /// The repository configurations.
         /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "nuget", Justification = "Spelling/name is correct.")]
         public static IReadOnlyList<PackageRepositoryConfiguration> GetPackageRepositoryConfigurations(
             string nugetConfigFilePath)
         {
@@ -210,6 +211,7 @@ namespace Naos.Packaging.NuGet
         /// <returns>
         /// The NuGet config XML file.
         /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Nuget", Justification = "Spelling/name is correct.")]
         public static string BuildNugetConfigFile(
             IReadOnlyList<PackageRepositoryConfiguration> repoConfigs)
         {
@@ -269,9 +271,7 @@ namespace Naos.Packaging.NuGet
                     {
                         var workingDirectory = Path.Combine(
                             this.defaultWorkingDirectory,
-                            "Down-" + DateTime.Now.ToString(
-                                DirectoryDateTimeToStringFormat,
-                                CultureInfo.InvariantCulture));
+                            "Down-" + DateTime.Now.ToString(DirectoryDateTimeToStringFormat, CultureInfo.InvariantCulture));
 
                         var packageFilePath = this.DownloadPackages(new[] { packageDescription }, workingDirectory).Single();
                         var packageFileBytes = File.ReadAllBytes(packageFilePath);
@@ -654,6 +654,37 @@ namespace Naos.Packaging.NuGet
             }
         }
 
+        private static string SetupTempWorkingDirectory(
+            string workingDirectory)
+        {
+            if (!Directory.Exists(workingDirectory))
+            {
+                throw new ArgumentException(Invariant($"{nameof(workingDirectory)} does not exist on disk."));
+            }
+
+            var result = Path.Combine(workingDirectory, Path.GetRandomFileName());
+            Directory.CreateDirectory(result);
+            return result;
+        }
+
+        private static string GetNugetConfigFilePath()
+        {
+            var result = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "NuGet",
+                "NuGet.config");
+
+            return result;
+        }
+
+        private static Version GetVersion(
+            string version)
+        {
+            var result = new Version(version.Split(new[] { "-" }, StringSplitOptions.RemoveEmptyEntries).First());
+
+            return result;
+        }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It is managed.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "nuget", Justification = "Spelling/name is correct.")]
         private string RunNugetCommandLine(
@@ -693,37 +724,6 @@ namespace Naos.Packaging.NuGet
 
                 return output;
             }
-        }
-
-        private static string SetupTempWorkingDirectory(
-            string workingDirectory)
-        {
-            if (!Directory.Exists(workingDirectory))
-            {
-                throw new ArgumentException(Invariant($"{nameof(workingDirectory)} does not exist on disk."));
-            }
-
-            var result = Path.Combine(workingDirectory, Path.GetRandomFileName());
-            Directory.CreateDirectory(result);
-            return result;
-        }
-
-        private static string GetNugetConfigFilePath()
-        {
-            var result = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "NuGet",
-                "NuGet.config");
-
-            return result;
-        }
-
-        private static Version GetVersion(
-            string version)
-        {
-            var result = new Version(version.Split(new[] { "-" }, StringSplitOptions.RemoveEmptyEntries).First());
-
-            return result;
         }
 
         private string SetupNugetExe(

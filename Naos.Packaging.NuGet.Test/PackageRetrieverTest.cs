@@ -7,33 +7,38 @@
 namespace Naos.Packaging.NuGet.Test
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
 
     using FluentAssertions;
 
     using Naos.Packaging.Domain;
-
+    using Naos.Packaging.Serialization.Json;
+    using OBeautifulCode.Serialization.Json;
     using Xunit;
 
     public static class PackageRetrieverTest
     {
 #pragma warning disable SA1305 // Field names must not use Hungarian notation
 
-        [Fact(Skip = "Meant for local debugging and to show usage.")]
+        [Fact]
         public static void DownloadPrivate()
         {
-            var repoConfig = new PackageRepositoryConfiguration
-            {
-                Source = "https://ci.appveyor.com/nuget/XXX",
-                ClearTextPassword = "ThisIsPassword",
-                UserName = "ThisIsUser",
-                SourceName = "ThisIsGalleryName",
-                ProtocolVersion = 2,
-            };
+            ////var repoConfig = new PackageRepositoryConfiguration
+            ////{
+            ////    Source = "https://ci.appveyor.com/nuget/XXX",
+            ////    ClearTextPassword = "ThisIsPassword",
+            ////    UserName = "ThisIsUser",
+            ////    SourceName = "ThisIsGalleryName",
+            ////    ProtocolVersion = 2,
+            ////};
+            var serializer = new ObcJsonSerializer(typeof(PackagingJsonSerializationConfiguration).ToJsonSerializationConfigurationType());
+            var repoConfigRaw = File.ReadAllText(@"D:\src\CoMetrics\CoMetrics.Config\CoMetrics.Config.Recipes\CoMetrics.Config.Deployment.NuGet\.config\Common\PackageRepositoryConfigurations.json");
+            var repoConfig = serializer.Deserialize<PackageRepositoryConfiguration>(repoConfigRaw);
 
-            var defaultWorkingDirectory = @"D:\Temp\NewNuGet";
-            var pm = new PackageRetriever(defaultWorkingDirectory, new[] { PackageRepositoryConfiguration.NugetOrgV2, PackageRepositoryConfiguration.NugetOrgV3, repoConfig });
-            var package = pm.GetPackage(new PackageDescription { Id = "ThisIsPackage" });
+            var defaultWorkingDirectory = @"D:\no-backup\";
+            var pm = new PackageRetriever(defaultWorkingDirectory, new[] { repoConfig });
+            var package = pm.GetPackage(new PackageDescription { Id = "CoMetrics.DeprecatedSubmission.Domain" });
             Assert.NotNull(package.PackageFileBytes);
         }
 
