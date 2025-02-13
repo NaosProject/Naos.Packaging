@@ -6,7 +6,7 @@
     <tags>naos packaging fakeiteasy autofixture dummy factory</tags>
     <dependencies>
       <dependency id="Naos.Packaging.Domain" version="$version$" />
-      <dependency id="OBeautifulCode.AutoFakeItEasy" version="1.0.140" />
+      <dependency id="OBeautifulCode.AutoFakeItEasy" version="1.0.141" />
     </dependencies>
   </metadata>
   <files>
